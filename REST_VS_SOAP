@@ -1,19 +1,13 @@
 Bhai, SOAP vs REST ka difference ek simple "Courier Service vs Postcard" example se samajhta hai:
-
-
----
+-------------------------------------------------------------------------------------------------------------------------
 
 🛑 1. SOAP (Courier Service - Secure & Structured)
-
 Soch tu ek important document DHL ya Bluedart courier se bhej raha hai.
-
 Yeh bahut secure hai, tracking hai, fixed format hai (jaise box ke andar proper packing).
-
 Zyada formal aur strict rules follow karta hai.
-
 Slow ho sakta hai, lekin reliable hai.
 
-
+------------------------------------------------------------------------------------------------------------------------
 👉 SOAP bhi aisa hi hai:
 ✅ Strict rules follow karta hai (WSDL format me hota hai).
 ✅ Security best hai (WS-Security, ACID transactions).
@@ -21,16 +15,13 @@ Slow ho sakta hai, lekin reliable hai.
 ❌ Slow hota hai (Zyada data formatting aur processing chahiye).
 
 
----
+----------------------------------------------------------------------------------------------------------------------
 
 ✅ 2. REST (Postcard - Fast & Flexible)
 
 Soch tu ek postcard bhej raha hai.
-
 Simple hai, koi strict rule nahi (Tu apne hisaab se likh sakta hai).
-
 Fast hai kyunki zyada processing nahi chahiye.
-
 Zyada flexible hai, har koi use kar sakta hai.
 
 
@@ -41,51 +32,28 @@ Zyada flexible hai, har koi use kar sakta hai.
 ❌ Less secure than SOAP (No built-in security, external layers chahiye).
 
 
----
+----------------------------------------------------------------------------------------------------------------------------------------
 
 🔥 Simple Summary
 
 👉 Agar tujhe high security chahiye (jaise banking, payments) → SOAP
 👉 Agar fast aur simple API chahiye (jaise mobile apps, websites) → REST
 
-Bhai ab samajh aaya? 😃
-Simple Summary
 
-Feature
 
-SOAP (Courier Service)
 
-REST (Postcard)
 
-Speed
+Feature                                                      SOAP (Courier Service)                                                       REST (Postcard)
 
-Slow (Zyada processing)
+Speed                                                        Slow (Zyada processing)                                                      Fast (Lightweight)
 
-Fast (Lightweight)
+Security                                                       High (WS-Security)                                                          Less secure
 
-Security
+Protocol Support                                               HTTP, SMTP, TCP                                                                Only HTTP
 
-High (WS-Security)
+Data Format                                                       Only XML                                                               JSON, XML, Plain text
 
-Less secure
-
-Protocol Support
-
-HTTP, SMTP, TCP
-
-Only HTTP
-
-Data Format
-
-Only XML
-
-JSON, XML, Plain text
-
-Use Case
-
-Banking, Payment Systems
-
-Web Apps, Mobile Apps, Public APIs
+Use Case                                                   Banking, Payment Systems                                               Web Apps, Mobile Apps, Public APIs
 
 Agar tujhe high security chahiye (jaise banking, payments) → SOAP
 
