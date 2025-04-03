@@ -1,1 +1,72 @@
+Yeh session Web Services ke do important concepts WSDL (Web Services Description Language) aur UDDI (Universal Description, Discovery, and Integration) ke baare mein hai. Chalo, isko ekdum simple tareeke se samajhte hain.
+
+
+---
+
+Web Services Overview
+
+Ek Web Service ek tarika hai jisme service provider aur service consumer aapas mein baat kar sakte hain. Web services ko samajhne ke liye do basic cheezein zaroori hain:
+
+1. WSDL – Yeh ek XML-based document hota hai jo batata hai ki web service ka structure kya hai, kaise use karna hai, kaunse inputs/outputs hote hain.
+
+
+2. UDDI – Yeh ek online directory (registry) hai jisme web services ka WSDL document store hota hai jisse koi bhi client search kar sake.
+
+
+
+
+---
+
+WSDL (Web Services Description Language)
+
+Jab ek service consumer kisi web service ko access karna chahta hai, toh use yeh pata hona chahiye ki web service kaise kaam karti hai.
+
+Service provider ek WSDL document publish karta hai jo batata hai:
+
+Kaunse functions available hain?
+
+Kaunse inputs aur outputs hote hain?
+
+Kaise request bhejni hai?
+
+
+WSDL ek XML document hota hai, jisme web service ke saare details likhe hote hain, taaki machines easily isko read aur process kar sakein.
+
+Example: Weather Web Service ka WSDL document ek URL par available hota hai, jisse client XML format mein details dekh sakta hai.
+
+Tools available hote hain jo WSDL ko parse karke asani se request-response generate karne mein madad karte hain.
+
+
+
+---
+
+UDDI (Universal Description, Discovery, and Integration)
+
+Agar service provider aur consumer ek doosre ko jaante hain, toh service provider seedha WSDL document client ko de sakta hai.
+
+Lekin agar service consumer ko kisi naye web service ki zaroorat ho aur usko nahi pata ki kaha milega, tab kya kare?
+
+Is problem ko solve karne ke liye UDDI registry ka use hota hai.
+
+UDDI ek online directory hoti hai jisme service providers apne WSDL documents ko register karte hain.
+
+Service consumers UDDI ko search karke required web service ka WSDL le sakte hain aur use consume kar sakte hain.
+
+
+
+---
+
+Summary (Short Recap)
+
+1. WSDL (Web Services Description Language) → Yeh ek XML-based document hai jo ek web service ke structure aur usage ko describe karta hai.
+
+
+2. UDDI (Universal Description, Discovery, and Integration) → Yeh ek online registry hai jisme web services ko search aur discover kiya ja sakta hai.
+
+
+
+Agar ek client ko kisi web service ka direct URL nahi pata, toh wo UDDI registry se uska WSDL dhoondh sakta hai aur phir service ko use kar sakta hai.
+
+I hope ab concept clear ho gaya hoga! Agar koi doubt hai toh batao.
+
 
