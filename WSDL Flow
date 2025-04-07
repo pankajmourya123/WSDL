@@ -1,22 +1,19 @@
 Bhai yeh bada valid sawaal hai — input me agar extra field bhejta hai toh exception aa raha hai, but output me extra field bhejne par exception nahi aata, iska reason hai:
-
-
----
+-----------------------------------------------------------------------------------------------------------------------------------
 
 1. Input Message = Client Input = Strictly Validated
-
 Jab tu input bhejta hai (jaise Postman se), aur tu ne SOAPInput node pe validation enable kiya hai (Content and Value), toh IIB/ACE tujh se expect karta hai ke input exactly WSDL/schema jaisa ho.
-
 Agar tu transactionreq me extra field bhejta hai jo schema me nahi hai — error aayega, kyunki tu schema ke against validate kar raha hai.
-
-
-
----
+------------------------------------------------------------------------------------------------------------------------------------
 
 2. Output Message = Server ka response = Optional Validation
-
 Output me agar tu extra field bhejta hai (Status), tab bhi error nahi aata, kyunki default behavior me output messages ko strict validation se pass nahi kiya jaata.
-
 Jab tak tu SOAPReply ke baad validate karne ka explicitly instruction nahi deta, ya output consumer side pe validation enable nahi hota, tab tak woh extra field ignore kar di jaati hai.
 
+------------------------------------------------------------------------------------------------------------------------------------
+
 Soap input ------------compute------------- validate -------- soap reply
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+validate node
+
