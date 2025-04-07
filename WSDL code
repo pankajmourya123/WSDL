@@ -1,0 +1,35 @@
+DECLARE soapenv NAMESPACE 'http://schemas.xmlsoap.org/soap/envelope/';
+DECLARE tran NAMESPACE 'http://tempuri.org/Transaction';
+
+CREATE COMPUTE MODULE MySoapFlow_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+
+		DECLARE inref REFERENCE TO InputRoot.SOAP.Body.tran:transactionreq;
+
+
+
+		IF inref.tran:TransactionId = 'NULL' THEN
+			SET OutputRoot.SOAP.Context.Namespace.(SOAP.NamespaceDecl)xmlns:soapenv = soapenv;
+			SET OutputRoot.SOAP.Body.soapenv:Fault.faultcode = '400';
+			SET OutputRoot.SOAP.Body.soapenv:Fault.faultstring = 'TransactionId is missing';
+			RETURN TRUE;
+		END IF;	
+
+
+		SET OutputRoot.SOAP.Context.Namespace.(SOAP.NamespaceDecl)xmlns:soapenv = soapenv;
+		SET OutputRoot.SOAP.Context.Namespace.(SOAP.NamespaceDecl)xmlns:tran = tran;
+
+
+		CREATE FIELD OutputRoot.SOAP.Body.tran:transactionres;
+		DECLARE outRef REFERENCE TO OutputRoot.SOAP.Body.tran:transactionres;
+
+
+		SET outRef.tran:TransactionId = inref.tran:TransactionId;
+		SET outRef.tran:Transactionname = 'OnlinePurchase';
+		SET outRef.tran:Amount = '500';
+		--SET outRef.tran:Status = 'Transaction is successful';
+
+		RETURN TRUE;
+	END;
+END MODULE;
