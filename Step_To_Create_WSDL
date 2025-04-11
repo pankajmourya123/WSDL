@@ -7,3 +7,22 @@ file either from the workspace or from an external directory) select your xsd fr
 
 
 Now You Admi.mxsd ---> Right click on it ---> Generate ------> WSDL Defination 
+
+
+
+MySoap
+-XML and DFDL Schemas
+--(default namespace)
+---admi.xsd
+---soap.xsd
+
+-Message Sets
+--MySoapMessageSet
+---messageSet.mset
+---Message Definitions
+---(default namespace)
+----admi.mxsd
+-Other Resources
+--MySoapMessageSet
+---importFiles
+---log
