@@ -1,0 +1,9 @@
+Right click --> Message model --> (Select the message model type or format) SOAP XML -->(Choose how you would like to create your SOAP XML schema message model) create an xml schema file using an XML Dcoment as a example
+-->( Select an XML file)  select file from outside workspace browse your xml file ---> Next --> finish
+
+Creating Message defination file 
+Rigth click ---> NEW --> other--> (Create a new message definition file from an existing source) XML Schema File --> (Specify a message definition file name and select an XML schema
+file either from the workspace or from an external directory) select your xsd from workspace --> Select global elements and complex types from which to create messages --> Finish
+
+
+Now You Admi.mxsd ---> Right click on it ---> Generate ------> WSDL Defination 
