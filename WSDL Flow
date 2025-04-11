@@ -15,5 +15,5 @@ Jab tak tu SOAPReply ke baad validate karne ka explicitly instruction nahi deta,
 Soap input ------------compute------------- validate -------- soap reply
 
 --------------------------------------------------------------------------------------------------------------------------------------------
-validate node
+validate node      yaa toh hum validate node use karoo yaa toh saop ouput mai validate (Content and Value) more easy way to saop reply mai validate wala kare   
 
