@@ -8,8 +8,6 @@ file either from the workspace or from an external directory) select your xsd fr
 
 Now You Admi.mxsd ---> Right click on it ---> Generate ------> WSDL Defination 
 
-
-
 MySoap
 -XML and DFDL Schemas
 --(default namespace)
@@ -26,3 +24,40 @@ MySoap
 --MySoapMessageSet
 ---importFiles
 ---log
+
+
+XML (Extensible Markup Language)
+Yeh teri actual data file hai.
+Isme tere business data hote hain – jaise customer details, transaction data, etc.
+
+XSD (XML Schema Definition)
+Yeh ek blueprint hai XML ke liye.
+Batata hai ki XML file ka structure kya hoga (kaunse elements, kaunse data types, mandatory fields, etc.)
+XML ko validate karne ke liye use hota hai.
+
+Message Set / Message Definition
+Yeh typically integration tools (like IBM Integration Bus, App Connect, etc.) mein use hoti hai.
+Message Set ke andar Message Definition File hoti hai jo XSD ke format mein hoti hai.
+Yeh system ko batati hai ki kaunsa message ka structure kya hai, kaunse format mein parse/serialize karna hai (XML, JSON, COBOL, etc.)
+
+MXSD (Message Extended Schema Definition)
+Yeh App Connect / IIB specific format hai.
+Basically XSD + App Connect/IIB specific metadata.
+Isko use karke system runtime mein XML ko process karta hai.
+Tera XML file isi MXSD ke base par parse hota hai
+
+
+WSDL (Web Service Definition Language)
+Yeh ek contract hota hai web service ke liye.
+Yeh define karta hai:
+Kaunse operations hain
+Input/Output messages kya hain
+Kaunsa XML structure use hoga (jo XSD/MXSD se aaya)
+Jab tu MXSD se WSDL banata hai, to wo automatically uss message structure ko use karta hai.
+
+
+Format Kya hota hai                                    Kab use hota hai
+XML Schema (XSD)                                   XML file ka structure define karta hai              Jab tera data XML format mein hota hai
+DFDL (Data Format Description Language)           Text ya binary data ko model karne ke liye           Jab tera data fixed-length text, CSV, binary hota hai
+Message Sets                                 Purane version ke message models (used in MRM domain)     Jab tu MRM (Message Repository Manager) ya IDOC domain use karta hai
+WebSphere Adapters                         SAP, Siebel jaise systems ke data model karne ke liye        Jab integration external ERP system ke sath ho
