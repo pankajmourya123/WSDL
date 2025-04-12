@@ -2,7 +2,8 @@ Right click --> Message model --> (Select the message model type or format) SOAP
 -->( Select an XML file)  select file from outside workspace browse your xml file ---> Next --> finish
 
 creating Message set 
-Rigth click ---> NEW --> other-->meesage set 
+Rigth click ---> NEW --> other-->meesage set --->Enter a name for the new message set---->Select one or more types of message data you want to process--->Finish
+
 
 Creating Message defination file 
 Rigth click ---> NEW --> other--> (Create a new message definition file from an existing source) XML Schema File --> (Specify a message definition file name and select an XML schema
