@@ -58,3 +58,49 @@ CREATE COMPUTE MODULE MySoapflow_Compute
 
 	END;
 END MODULE;
+_----------
+CREATE COMPUTE MODULE MySoapflow_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		CALL BuildSOAPRequest();
+		RETURN TRUE;
+	END;
+
+	CREATE PROCEDURE BuildSOAPRequest() BEGIN
+
+		DECLARE soapenv NAMESPACE 'http://schemas.xmlsoap.org/soap/envelope/';
+		DECLARE admi NAMESPACE 'http://tempuri.org/Admi';
+
+		-- Clear previous output
+		DELETE FIELD OutputRoot;
+
+		-- Declare Envelope and Namespaces
+		SET OutputRoot.XMLNSC.soapenv:Envelope.(XMLNSC.NamespaceDecl)xmlns:soapenv = soapenv;
+		SET OutputRoot.XMLNSC.soapenv:Envelope.(XMLNSC.NamespaceDecl)xmlns:admi = admi;
+
+		-- Add Header
+		CREATE LASTCHILD OF OutputRoot.XMLNSC.soapenv:Envelope AS hdr NAME 'soapenv:Header';
+
+		-- Add Body and Payload
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.(XMLNSC.Attribute)xm = 'exampleValue';
+
+		-- Fr block
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:Fr.admi:FIId.admi:FinInstnId.admi:ClrSysMmbId.admi:MmbId = 'FR123456';
+
+		-- To block
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:To.admi:FIId.admi:FinInstnId.admi:ClrSysMmbId.admi:MmbId = 'TO987654';
+
+		-- AppHdr metadata
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:BizMsgIdr = 'MSGID20250414';
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:MsgDefIdr = 'pacs.002.001.09';
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:BizSvc = 'TransferService';
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:CreDt = '2025-04-14T10:30:00Z';
+
+		-- Document and SysEvtNtfctn
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:Document.admi:SysEvtNtfctn.admi:EvtInf.admi:EvtCd = 'EVT001';
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:Document.admi:SysEvtNtfctn.admi:EvtInf.admi:EvtParam = 'Threshold breach';
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:Document.admi:SysEvtNtfctn.admi:EvtInf.admi:EvtDesc = 'System threshold exceeded during processing.';
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:Document.admi:SysEvtNtfctn.admi:EvtInf.admi:EvtTm = '2025-04-14T10:45:00Z';
+
+	END;
+END MODULE;
