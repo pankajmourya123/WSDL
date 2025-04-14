@@ -789,3 +789,46 @@ CREATE COMPUTE MODULE MySoapflow_Compute
 
 	END;
 END MODULE;
+
+
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:admi="http://tempuri.org/Admi">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <admi:RequestPayload>
+         <admi:AppHdr xm="?">
+            <admi:Fr>
+               <admi:FIId>
+                  <admi:FinInstnId>
+                     <admi:ClrSysMmbId>
+                        <admi:MmbId>?</admi:MmbId>
+                     </admi:ClrSysMmbId>
+                  </admi:FinInstnId>
+               </admi:FIId>
+            </admi:Fr>
+            <admi:To>
+               <admi:FIId>
+                  <admi:FinInstnId>
+                     <admi:ClrSysMmbId>
+                        <admi:MmbId>?</admi:MmbId>
+                     </admi:ClrSysMmbId>
+                  </admi:FinInstnId>
+               </admi:FIId>
+            </admi:To>
+            <admi:BizMsgIdr>?</admi:BizMsgIdr>
+            <admi:MsgDefIdr>?</admi:MsgDefIdr>
+            <admi:BizSvc>?</admi:BizSvc>
+            <admi:CreDt>?</admi:CreDt>
+         </admi:AppHdr>
+         <admi:Document>
+            <admi:SysEvtNtfctn>
+               <admi:EvtInf>
+                  <admi:EvtCd>?</admi:EvtCd>
+                  <admi:EvtParam>?</admi:EvtParam>
+                  <admi:EvtDesc>?</admi:EvtDesc>
+                  <admi:EvtTm>?</admi:EvtTm>
+               </admi:EvtInf>
+            </admi:SysEvtNtfctn>
+         </admi:Document>
+      </admi:RequestPayload>
+   </soapenv:Body>
+</soapenv:Envelope>
