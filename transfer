@@ -450,3 +450,228 @@ END MODULE;
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>
+
+
+
+Message
+	Properties
+			MessageSet:CHARACTER:
+			MessageType:CHARACTER:
+			MessageFormat:CHARACTER:
+			Encoding:INTEGER:546
+			CodedCharSetId:INTEGER:1208
+			Transactional:BOOLEAN:false
+			Persistence:BOOLEAN:false
+			CreationTime:TIMESTAMP:java.util.GregorianCalendar[time=1744593858542,areFieldsSet=true,areAllFieldsSet=false,lenient=true,zone=sun.util.calendar.ZoneInfo[id="Asia/Calcutta",offset=19800000,dstSavings=0,useDaylight=false,transitions=7,lastRule=null],firstDayOfWeek=1,minimalDaysInFirstWeek=1,ERA=?,YEAR=2025,MONTH=3,WEEK_OF_YEAR=?,WEEK_OF_MONTH=?,DAY_OF_MONTH=14,DAY_OF_YEAR=?,DAY_OF_WEEK=?,DAY_OF_WEEK_IN_MONTH=?,AM_PM=0,HOUR=6,HOUR_OF_DAY=6,MINUTE=54,SECOND=18,MILLISECOND=542,ZONE_OFFSET=?,DST_OFFSET=?]
+			ExpirationTime:INTEGER:-1
+			Priority:INTEGER:0
+			ReplyIdentifier:BLOB:[B@9780ea24
+			ReplyProtocol:CHARACTER:SOAP-AXIS2
+			Topic:UNKNOWN:null
+			ContentType:CHARACTER:application/xml
+			IdentitySourceType:CHARACTER:
+			IdentitySourceToken:CHARACTER:
+			IdentitySourcePassword:CHARACTER:
+			IdentitySourceIssuedBy:CHARACTER:
+			IdentityMappedType:CHARACTER:
+			IdentityMappedToken:CHARACTER:
+			IdentityMappedPassword:CHARACTER:
+			IdentityMappedIssuedBy:CHARACTER:
+	HTTPInputHeader
+			Content-Type:CHARACTER:application/xml
+			User-Agent:CHARACTER:PostmanRuntime/7.43.3
+			Accept:CHARACTER:*/*
+			Cache-Control:CHARACTER:no-cache
+			Postman-Token:CHARACTER:adef19b4-71df-4e6d-a1ba-c1115df9ba77
+			Host:CHARACTER:localhost:7800
+			Accept-Encoding:CHARACTER:gzip, deflate, br
+			Connection:CHARACTER:keep-alive
+			Content-Length:CHARACTER:458
+			X-Original-HTTP-Command:CHARACTER:POST http://localhost:7800/AdmiSOAP_HTTP_Service HTTP/1.1
+			X-Server-Name:CHARACTER:localhost
+			X-Server-Port:CHARACTER:7800
+			X-Remote-Addr:CHARACTER:127.0.0.1
+			X-Remote-Host:CHARACTER:localhost
+			X-Scheme:CHARACTER:http
+	SOAP
+			Context
+					operation:CHARACTER:Fr
+					operationType:CHARACTER:REQUEST_RESPONSE
+					portType:CHARACTER:AdmiPortType
+					portTypeNamespace:CHARACTER:http://tempuri.org/Admi
+					port:CHARACTER:AdmiSOAP_HTTP_Port
+					service:CHARACTER:AdmiSOAP_HTTP_Service
+					fileName:CHARACTER:AdmiService.wsdl
+					SOAP_Version:CHARACTER:1.1
+					Namespace
+							soapenv:CHARACTER:http://schemas.xmlsoap.org/soap/envelope/
+							admi:CHARACTER:http://tempuri.org/Admi
+			Header
+			Body
+					Fr
+							FIId
+									FinInstnId
+											ClrSysMmbId
+													MmbId:CHARACTER:7899
+
+
+
+==================================================================================================================================
+
+OutputRoot
+	Properties
+			MessageSet:CHARACTER:
+			MessageType:CHARACTER:
+			MessageFormat:CHARACTER:
+			Encoding:INTEGER:546
+			CodedCharSetId:INTEGER:1208
+			Transactional:BOOLEAN:false
+			Persistence:BOOLEAN:false
+			CreationTime:TIMESTAMP:java.util.GregorianCalendar[time=1744593858542,areFieldsSet=true,areAllFieldsSet=false,lenient=true,zone=sun.util.calendar.ZoneInfo[id="Asia/Calcutta",offset=19800000,dstSavings=0,useDaylight=false,transitions=7,lastRule=null],firstDayOfWeek=1,minimalDaysInFirstWeek=1,ERA=?,YEAR=2025,MONTH=3,WEEK_OF_YEAR=?,WEEK_OF_MONTH=?,DAY_OF_MONTH=14,DAY_OF_YEAR=?,DAY_OF_WEEK=?,DAY_OF_WEEK_IN_MONTH=?,AM_PM=0,HOUR=6,HOUR_OF_DAY=6,MINUTE=54,SECOND=18,MILLISECOND=542,ZONE_OFFSET=?,DST_OFFSET=?]
+			ExpirationTime:INTEGER:-1
+			Priority:INTEGER:0
+			ReplyIdentifier:BLOB:[B@4c22e3f2
+			ReplyProtocol:CHARACTER:SOAP-AXIS2
+			Topic:UNKNOWN:null
+			ContentType:CHARACTER:application/xml
+			IdentitySourceType:CHARACTER:
+			IdentitySourceToken:CHARACTER:
+			IdentitySourcePassword:CHARACTER:
+			IdentitySourceIssuedBy:CHARACTER:
+			IdentityMappedType:CHARACTER:
+			IdentityMappedToken:CHARACTER:
+			IdentityMappedPassword:CHARACTER:
+			IdentityMappedIssuedBy:CHARACTER:
+	HTTPInputHeader
+			Content-Type:CHARACTER:application/xml
+			User-Agent:CHARACTER:PostmanRuntime/7.43.3
+			Accept:CHARACTER:*/*
+			Cache-Control:CHARACTER:no-cache
+			Postman-Token:CHARACTER:adef19b4-71df-4e6d-a1ba-c1115df9ba77
+			Host:CHARACTER:localhost:7800
+			Accept-Encoding:CHARACTER:gzip, deflate, br
+			Connection:CHARACTER:keep-alive
+			Content-Length:CHARACTER:458
+			X-Original-HTTP-Command:CHARACTER:POST http://localhost:7800/AdmiSOAP_HTTP_Service HTTP/1.1
+			X-Server-Name:CHARACTER:localhost
+			X-Server-Port:CHARACTER:7800
+			X-Remote-Addr:CHARACTER:127.0.0.1
+			X-Remote-Host:CHARACTER:localhost
+			X-Scheme:CHARACTER:http
+	SOAP
+			Context
+					operation:CHARACTER:Fr
+					operationType:CHARACTER:REQUEST_RESPONSE
+					portType:CHARACTER:AdmiPortType
+					portTypeNamespace:CHARACTER:http://tempuri.org/Admi
+					port:CHARACTER:AdmiSOAP_HTTP_Port
+					service:CHARACTER:AdmiSOAP_HTTP_Service
+					fileName:CHARACTER:AdmiService.wsdl
+					SOAP_Version:CHARACTER:1.1
+					Namespace
+							soapenv:CHARACTER:http://schemas.xmlsoap.org/soap/envelope/
+							admi:CHARACTER:http://tempuri.org/Admi
+			Header
+			Body
+					Fr
+							FIId
+									FinInstnId
+											ClrSysMmbId
+													MmbId:CHARACTER:7899
+=============================================================================================================================================
+DECLARE soapenv NAMESPACE 'http://schemas.xmlsoap.org/soap/envelope/';
+DECLARE tran NAMESPACE 'http://tempuri.org/Admi';
+
+
+
+CREATE COMPUTE MODULE MySoapflow_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		  CALL CopyEntireMessage();
+		RETURN TRUE;
+	END;
+
+	
+
+	CREATE PROCEDURE CopyEntireMessage() BEGIN
+		
+		
+		
+	 DECLARE inref REFERENCE TO InputRoot.SOAP.Body.tran:Fr;
+		
+		CREATE FIELD OutputRoot.SOAP.Body.tran:Fr;
+		DECLARE outRef REFERENCE TO OutputRoot.SOAP.Body.tran:Fr;
+		SET outRef.tran:Fr.tran:FIId.tran:FinInstnId.tran:ClrSysMmbId.tran:MmbId=12345;
+		
+		
+		ExceptionList
+	RecoverableException
+			File:CHARACTER:C:\ci\product-build\WMB\src\DataFlowEngine\MessageServices\ImbDataFlowNode.cpp
+			Line:INTEGER:1607
+			Function:CHARACTER:ImbDataFlowNode::createExceptionList
+			Type:CHARACTER:ComIbmSOAPInputNode
+			Name:CHARACTER:MySoapflow#FCMComposite_1_1
+			Label:CHARACTER:MySoapflow.SOAP Input
+			Catalog:CHARACTER:BIPmsgs
+			Severity:INTEGER:3
+			Number:INTEGER:2230
+			Text:CHARACTER:Node throwing exception
+			Insert
+					Type:INTEGER:14
+					Text:CHARACTER:MySoapflow.SOAP Input
+			RecoverableException
+					File:CHARACTER:C:\ci\product-build\WMB\src\WebServices\WSLibrary\ImbSOAPReplyNode.cpp
+					Line:INTEGER:286
+					Function:CHARACTER:ImbSOAPReplyNode::evaluate
+					Type:CHARACTER:ComIbmSOAPReplyNode
+					Name:CHARACTER:MySoapflow#FCMComposite_1_2
+					Label:CHARACTER:MySoapflow.SOAP Reply
+					Catalog:CHARACTER:BIPmsgs
+					Severity:INTEGER:3
+					Number:INTEGER:3752
+					Text:CHARACTER:Error occurred in ImbSOAPReplyHelper::makeSOAPReply()
+					Insert
+							Type:INTEGER:14
+							Text:CHARACTER:MySoapflow.SOAP Reply
+					ParserException
+							File:CHARACTER:C:\ci\product-build\WMB\src\WebServices\WSBase\ImbSOAPParser.cpp
+							Line:INTEGER:1450
+							Function:CHARACTER:ImbSOAPParser::refreshBitStreamFromElementsInner
+							Type:CHARACTER:
+							Name:CHARACTER:
+							Label:CHARACTER:
+							Catalog:CHARACTER:BIPmsgs
+							Severity:INTEGER:3
+							Number:INTEGER:3605
+							Text:CHARACTER:SOAP tree cannot be serialized
+							ParserException
+									File:CHARACTER:C:\ci\product-build\WMB\src\WebServices\WSBase\ImbSOAPParser.cpp
+									Line:INTEGER:880
+									Function:CHARACTER:ImbSOAPParser::refreshBitStreamFromElementsInner
+									Type:CHARACTER:
+									Name:CHARACTER:
+									Label:CHARACTER:
+									Catalog:CHARACTER:BIPmsgs
+									Severity:INTEGER:3
+									Number:INTEGER:3602
+									Text:CHARACTER:no operation found matching payload
+									Insert
+											Type:INTEGER:5
+											Text:CHARACTER:{http://tempuri.org/Admi}AppHdr
+									Insert
+											Type:INTEGER:5
+											Text:CHARACTER:AdmiSOAP_HTTP_Binding
+									Insert
+											Type:INTEGER:5
+											Text:CHARACTER:AdmiService.wsdl
+		
+	END;
+END MODULE;
+
+=============================================================================================================================
+
+
+
+
+
+
