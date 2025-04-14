@@ -669,7 +669,17 @@ CREATE COMPUTE MODULE MySoapflow_Compute
 END MODULE;
 
 =============================================================================================================================
+-- Declare reference to the SOAP Body's 'Fr' element
+DECLARE outRef REFERENCE TO OutputRoot.SOAP.Body;
 
+-- Create the structure according to the schema
+CREATE FIELD outRef.tran:Fr;
+CREATE FIELD outRef.tran:Fr.tran:FIId;
+CREATE FIELD outRef.tran:Fr.tran:FIId.tran:FinInstnId;
+CREATE FIELD outRef.tran:Fr.tran:FIId.tran:FinInstnId.tran:ClrSysMmbId;
+
+-- Set the required field with proper data type (as string)
+SET outRef.tran:Fr.tran:FIId.tran:FinInstnId.tran:ClrSysMmbId.tran:MmbId = '12345';
 
 
 
