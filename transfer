@@ -731,5 +731,37 @@ OutputRoot
 
 
 
+DECLARE soapenv NAMESPACE 'http://schemas.xmlsoap.org/soap/envelope/';
+DECLARE tran NAMESPACE 'http://tempuri.org/Admi';
 
+CREATE COMPUTE MODULE MySoapflow_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		CALL CopyEntireMessage();
+		RETURN TRUE;
+	END;
+
+	CREATE PROCEDURE CopyEntireMessage() BEGIN		
+
+		-- Start clean output message
+		DELETE FIELD OutputRoot;
+
+		-- Create SOAP Envelope structure
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'SOAP' NAME 'Envelope';
+		DECLARE envRef REFERENCE TO OutputRoot.SOAP:Envelope;
+		CREATE LASTCHILD OF envRef NAME 'Body';
+		DECLARE bodyRef REFERENCE TO envRef.SOAP:Body;
+
+		-- Create payload under XMLNSC (actual content must go here)
+		CREATE LASTCHILD OF bodyRef DOMAIN 'XMLNSC' NAME 'tran:Fr';
+		DECLARE frRef REFERENCE TO bodyRef."XMLNSC"."tran:Fr";
+
+		-- Continue building the tree
+		CREATE LASTCHILD OF frRef NAME 'tran:FIId';
+		CREATE LASTCHILD OF frRef.tran:FIId NAME 'tran:FinInstnId';
+		CREATE LASTCHILD OF frRef.tran:FIId.tran:FinInstnId NAME 'tran:ClrSysMmbId';
+		SET frRef.tran:FIId.tran:FinInstnId.tran:ClrSysMmbId.tran:MmbId = '12345';
+
+	END;
+END MODULE;
 
