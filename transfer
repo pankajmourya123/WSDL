@@ -765,3 +765,27 @@ CREATE COMPUTE MODULE MySoapflow_Compute
 	END;
 END MODULE;
 
+CREATE COMPUTE MODULE MySoapflow_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		CALL BuildSOAPRequest();
+		RETURN TRUE;
+	END;
+
+	CREATE PROCEDURE BuildSOAPRequest() BEGIN
+
+		DECLARE soapenv NAMESPACE 'http://schemas.xmlsoap.org/soap/envelope/';
+		DECLARE tran NAMESPACE 'http://tempuri.org/Admi';
+
+		-- Clear OutputRoot first
+		DELETE FIELD OutputRoot;
+
+		-- Declare Envelope and Namespaces
+		SET OutputRoot.XMLNSC.soapenv:Envelope.(XMLNSC.NamespaceDecl)xmlns:soapenv = soapenv;
+		SET OutputRoot.XMLNSC.soapenv:Envelope.(XMLNSC.NamespaceDecl)xmlns:tran = tran;
+
+		-- Build Body and content
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.tran:Fr.tran:FIId.tran:FinInstnId.tran:ClrSysMmbId.tran:MmbId = '12345';
+
+	END;
+END MODULE;
