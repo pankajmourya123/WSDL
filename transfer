@@ -1,115 +1,13 @@
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
-   <soapenv:Header/>
-   <soapenv:Body>
-      <RequestPayload>
-        
-         <AppHdr  xmlns:xsi="urn:iso:std:iso:20022:tech:xsd:Header" xmlns="urn:iso:std:iso:20022:tech:xsd:head.001.001.02">
-        <Fr>
-            <FIId>
-                <FinInstnId>
-                    <ClrSysMmbId>
-                        <MmbId>RBIP0NEFTSC</MmbId>
-                    </ClrSysMmbId>
-                </FinInstnId>
-            </FIId>
-        </Fr>
-        <To>
-            <FIId>
-                <FinInstnId>
-                    <ClrSysMmbId>
-                        <MmbId>GSCB0000001</MmbId>
-                    </ClrSysMmbId>
-                </FinInstnId>
-            </FIId>
-        </To>
-        <BizMsgIdr>GSCB202412105310110020</BizMsgIdr>
-        <MsgDefIdr>admi.004.001.02</MsgDefIdr>
-        <BizSvc>NEFT</BizSvc>
-        <CreDt>2024-12-10T12:26:49Z</CreDt>
-    </AppHdr>
-
-         <Document xmlns="urn:iso:std:iso:20022:tech:xsd:admi.004.001.02">
-        <SysEvtNtfctn>
-            <EvtInf>
-                <EvtCd>F27</EvtCd>
-                <EvtParam>PBAPI000000</EvtParam>
-                <EvtDesc>Message sent successfully.</EvtDesc>
-                <EvtTm>2024-12-10T12:26:49</EvtTm>
-            </EvtInf>
-        </SysEvtNtfctn>
-    </Document>
-
-      </RequestPayload>
-   </soapenv:Body>
-</soapenv:Envelope>
-
-================================================================================================
-Message
-	Properties
-			MessageSet:CHARACTER:
-			MessageType:CHARACTER:
-			MessageFormat:CHARACTER:
-			Encoding:INTEGER:546
-			CodedCharSetId:INTEGER:1208
-			Transactional:BOOLEAN:false
-			Persistence:BOOLEAN:false
-			CreationTime:TIMESTAMP:java.util.GregorianCalendar[time=1744703380207,areFieldsSet=true,areAllFieldsSet=false,lenient=true,zone=sun.util.calendar.ZoneInfo[id="Asia/Calcutta",offset=19800000,dstSavings=0,useDaylight=false,transitions=7,lastRule=null],firstDayOfWeek=1,minimalDaysInFirstWeek=1,ERA=?,YEAR=2025,MONTH=3,WEEK_OF_YEAR=?,WEEK_OF_MONTH=?,DAY_OF_MONTH=15,DAY_OF_YEAR=?,DAY_OF_WEEK=?,DAY_OF_WEEK_IN_MONTH=?,AM_PM=1,HOUR=1,HOUR_OF_DAY=13,MINUTE=19,SECOND=40,MILLISECOND=207,ZONE_OFFSET=?,DST_OFFSET=?]
-			ExpirationTime:INTEGER:-1
-			Priority:INTEGER:0
-			ReplyIdentifier:BLOB:[B@25230e53
-			ReplyProtocol:CHARACTER:SOAP-AXIS2
-			Topic:UNKNOWN:null
-			ContentType:CHARACTER:application/xml
-			IdentitySourceType:CHARACTER:
-			IdentitySourceToken:CHARACTER:
-			IdentitySourcePassword:CHARACTER:
-			IdentitySourceIssuedBy:CHARACTER:
-			IdentityMappedType:CHARACTER:
-			IdentityMappedToken:CHARACTER:
-			IdentityMappedPassword:CHARACTER:
-			IdentityMappedIssuedBy:CHARACTER:
-	HTTPInputHeader
-			Content-Type:CHARACTER:application/xml
-			User-Agent:CHARACTER:PostmanRuntime/7.43.3
-			Accept:CHARACTER:*/*
-			Cache-Control:CHARACTER:no-cache
-			Postman-Token:CHARACTER:5f938014-b50b-43a1-9a78-73742d1345a5
-			Host:CHARACTER:localhost:7800
-			Accept-Encoding:CHARACTER:gzip, deflate, br
-			Connection:CHARACTER:keep-alive
-			Content-Length:CHARACTER:1436
-			X-Original-HTTP-Command:CHARACTER:POST http://localhost:7800/AdmiSOAP_HTTP_Service HTTP/1.1
-			X-Server-Name:CHARACTER:localhost
-			X-Server-Port:CHARACTER:7800
-			X-Remote-Addr:CHARACTER:127.0.0.1
-			X-Remote-Host:CHARACTER:localhost
-			X-Scheme:CHARACTER:http
-	SOAP
-	CHARACTER:problem creating SOAP tree from bitstream
-================================================================================================================
-
-
-DECLARE soapenv NAMESPACE 'http://schemas.xmlsoap.org/soap/envelope/';
-DECLARE admi NAMESPACE 'urn:iso:std:iso:20022:tech:xsd:Header';
-
-
-
-
-
-CREATE COMPUTE MODULE MySoapflow_Compute
-	CREATE FUNCTION Main() RETURNS BOOLEAN
-	BEGIN
-		CALL CopyEntireMessage();
-		RETURN TRUE;
-	END;
-
-
-
-	CREATE PROCEDURE CopyEntireMessage() BEGIN
-		
-
-		SET  OutputRoot=InputRoot;
-
-
-	END;
-END MODULE;
+JAVA_HOME=/opt/java7
+PATH=$JAVA_HOME/bin:$PATH
+export PATH
+UFM_COUNT=`ps -ef |grep ${LOGNAME} | grep -v grep | grep "/opt/mqm/Capitalware/UFM/workflow/CBS182_CEDGERRB_DONE_WORKFLOW.xml"|wc -l`
+/usr/bin/date
+if [ ${UFM_COUNT} -gt 0 ]
+then
+        echo "UFM 182 CEDGERRB DONE is already Running.........."
+else
+	echo "Starting UFM 182 CEDGERRB DONE"
+	nohup /opt/mqm/Capitalware/UFM/UFM.sh /opt/mqm/Capitalware/UFM/workflow/CBS182_CEDGERRB_DONE_WORKFLOW.xml > /dev/null &
+	echo "Started UFM 182 CEDGERRB DONE"
+fi
