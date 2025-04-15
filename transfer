@@ -1,394 +1,123 @@
-CREATE COMPUTE MODULE MySoapflow_Compute
-	CREATE FUNCTION Main() RETURNS BOOLEAN
-	BEGIN
-		CALL BuildSOAPRequest();
-		RETURN TRUE;
-	END;
-
-	CREATE PROCEDURE BuildSOAPRequest() BEGIN
-
-		DECLARE soapenv NAMESPACE 'http://schemas.xmlsoap.org/soap/envelope/';
-		DECLARE admi NAMESPACE 'http://tempuri.org/Admi';
-
-		-- Declare input reference
-		DECLARE inref REFERENCE TO InputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr;
-
-		-- Example validation: if BizMsgIdr is missing or NULL, return Fault
-		IF NOT EXISTS(inref.admi:BizMsgIdr) OR inref.admi:BizMsgIdr = '' THEN
-			-- Clear output
-			DELETE FIELD OutputRoot;
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:admi="http://tempuri.org/Admi">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <admi:RequestPayload>
+         <admi:AppHdr xm="?">
+            <admi:Fr>
+               <admi:FIId>
+                  <admi:FinInstnId>
+                     <admi:ClrSysMmbId>
+                        <admi:MmbId>?</admi:MmbId>
+                     </admi:ClrSysMmbId>
+                  </admi:FinInstnId>
+               </admi:FIId>
+            </admi:Fr>
+            <admi:To>
+               <admi:FIId>
+                  <admi:FinInstnId>
+                     <admi:ClrSysMmbId>
+                        <admi:MmbId>123</admi:MmbId>
+                     </admi:ClrSysMmbId>
+                  </admi:FinInstnId>
+               </admi:FIId>
+            </admi:To>
+            <admi:BizMsgIdr></admi:BizMsgIdr>
+            <admi:MsgDefIdr>567</admi:MsgDefIdr>
+            <admi:BizSvc>989</admi:BizSvc>
+            <admi:CreDt>890</admi:CreDt>
+         </admi:AppHdr>
+         <admi:Document>
+            <admi:SysEvtNtfctn>
+               <admi:EvtInf>
+                  <admi:EvtCd>876</admi:EvtCd>
+                  <admi:EvtParam>876</admi:EvtParam>
+                  <admi:EvtDesc>76</admi:EvtDesc>
+                  <admi:EvtTm>87689878</admi:EvtTm>
+               </admi:EvtInf>
+            </admi:SysEvtNtfctn>
+         </admi:Document>
+      </admi:RequestPayload>
+   </soapenv:Body>
+</soapenv:Envelope>
+==============================================================================================================================================
+DECLARE inref REFERENCE TO InputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr;		
+		
+		DECLARE test1 CHARACTER;
+		DECLARE test2 CHARACTER;
+		DECLARE test3 CHARACTER;
+		
+		set test1 = InputRoot.SOAP.Body.admi:RequestPayload.admi:Document.admi:SysEvtNtfctn.admi:EvtInf.admi:EvtCd;
+		
+		set test2 =InputRoot.SOAP.Body.admi:AppHdr.admi:BizMsgIdr;
+		
+		set test3 =InputRoot.SOAP.Body.admi:RequestPayload.admi:AppHdr.admi:BizMsgIdr;
+		
+		
+		IF  test1 IS NULL OR test3 IS NULL THEN
 			
-			-- Set SOAP Fault
 			SET OutputRoot.XMLNSC.soapenv:Envelope.(XMLNSC.NamespaceDecl)xmlns:soapenv = soapenv;
 			SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.soapenv:Fault.faultcode = '400';
 			SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.soapenv:Fault.faultstring = 'BizMsgIdr is missing';
 			RETURN;
 		END IF;
 
-		-- Continue normal SOAP building if validation passes
-		DELETE FIELD OutputRoot;
-
-		-- Declare Envelope and Namespaces
+		
+		
 		SET OutputRoot.XMLNSC.soapenv:Envelope.(XMLNSC.NamespaceDecl)xmlns:soapenv = soapenv;
 		SET OutputRoot.XMLNSC.soapenv:Envelope.(XMLNSC.NamespaceDecl)xmlns:admi = admi;
 
-		-- Add Header
-		CREATE LASTCHILD OF OutputRoot.XMLNSC.soapenv:Envelope AS hdr NAME 'soapenv:Header';
-
-		-- Add Body and Payload
+		
+		CREATE LASTCHILD OF OutputRoot.XMLNSC.soapenv:Envelope  NAME 'soapenv:Header';
 		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.(XMLNSC.Attribute)xm = 'exampleValue';
-
-		-- Fr block
 		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:Fr.admi:FIId.admi:FinInstnId.admi:ClrSysMmbId.admi:MmbId = 'FR123456';
-
-		-- To block
 		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:To.admi:FIId.admi:FinInstnId.admi:ClrSysMmbId.admi:MmbId = 'TO987654';
-
-		-- AppHdr metadata
-		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:BizMsgIdr = inref.admi:BizMsgIdr;
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:BizMsgIdr = 987654;
 		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:MsgDefIdr = 'pacs.002.001.09';
 		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:BizSvc = 'TransferService';
 		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:CreDt = '2025-04-14T10:30:00Z';
-
-		-- Document and SysEvtNtfctn
 		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:Document.admi:SysEvtNtfctn.admi:EvtInf.admi:EvtCd = 'EVT001';
 		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:Document.admi:SysEvtNtfctn.admi:EvtInf.admi:EvtParam = 'Threshold breach';
 		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:Document.admi:SysEvtNtfctn.admi:EvtInf.admi:EvtDesc = 'System threshold exceeded during processing.';
 		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:Document.admi:SysEvtNtfctn.admi:EvtInf.admi:EvtTm = '2025-04-14T10:45:00Z';
-
-	END;
-END MODULE;
-_----------
-CREATE COMPUTE MODULE MySoapflow_Compute
-	CREATE FUNCTION Main() RETURNS BOOLEAN
-	BEGIN
-		CALL BuildSOAPRequest();
-		RETURN TRUE;
-	END;
-
-	CREATE PROCEDURE BuildSOAPRequest() BEGIN
-
-		DECLARE soapenv NAMESPACE 'http://schemas.xmlsoap.org/soap/envelope/';
-		DECLARE admi NAMESPACE 'http://tempuri.org/Admi';
-
-		-- Clear previous output
-		DELETE FIELD OutputRoot;
-
-		-- Declare Envelope and Namespaces
-		SET OutputRoot.XMLNSC.soapenv:Envelope.(XMLNSC.NamespaceDecl)xmlns:soapenv = soapenv;
-		SET OutputRoot.XMLNSC.soapenv:Envelope.(XMLNSC.NamespaceDecl)xmlns:admi = admi;
-
-		-- Add Header
-		CREATE LASTCHILD OF OutputRoot.XMLNSC.soapenv:Envelope AS hdr NAME 'soapenv:Header';
-
-		-- Add Body and Payload
-		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.(XMLNSC.Attribute)xm = 'exampleValue';
-
-		-- Fr block
-		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:Fr.admi:FIId.admi:FinInstnId.admi:ClrSysMmbId.admi:MmbId = 'FR123456';
-
-		-- To block
-		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:To.admi:FIId.admi:FinInstnId.admi:ClrSysMmbId.admi:MmbId = 'TO987654';
-
-		-- AppHdr metadata
-		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:BizMsgIdr = 'MSGID20250414';
-		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:MsgDefIdr = 'pacs.002.001.09';
-		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:BizSvc = 'TransferService';
-		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:CreDt = '2025-04-14T10:30:00Z';
-
-		-- Document and SysEvtNtfctn
-		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:Document.admi:SysEvtNtfctn.admi:EvtInf.admi:EvtCd = 'EVT001';
-		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:Document.admi:SysEvtNtfctn.admi:EvtInf.admi:EvtParam = 'Threshold breach';
-		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:Document.admi:SysEvtNtfctn.admi:EvtInf.admi:EvtDesc = 'System threshold exceeded during processing.';
-		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:Document.admi:SysEvtNtfctn.admi:EvtInf.admi:EvtTm = '2025-04-14T10:45:00Z';
-
-	END;
-END MODULE;
-==============================================================================================================================================================
-
-<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" name="Admi" targetNamespace="http://tempuri.org/Admi" xmlns="http://tempuri.org/Admi" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://tempuri.org/Admi" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <wsdl:documentation>
-    <wsdl:appinfo source="WMQI_APPINFO">
-      <MRWSDLAppInfo imported="true">
-        <generatedXSD location="AdmiService_InlineSchema1.xsd"/>
-        <binding hasEncoding="false" imported="true" name="AdmiSOAP_HTTP_Binding" originalBindingStyle="document"/>
-      </MRWSDLAppInfo>
-    </wsdl:appinfo>
-  </wsdl:documentation>
-  <wsdl:types>
-    
-          <xsd:schema targetNamespace="http://tempuri.org/Admi" xmlns:ibmSchExtn="http://www.ibm.com/schema/extensions" xmlns:mrm="http://tempuri.org/Admi">
-<xsd:include schemaLocation="AdmiService_InlineSchema1.xsd"/>
-    </xsd:schema>
-    </wsdl:types>
-  <wsdl:message name="SysEvtNtfctn_in">
-    <wsdl:part element="SysEvtNtfctn" name="SysEvtNtfctn"/>
-  </wsdl:message>
-  <wsdl:message name="SysEvtNtfctn_out">
-    <wsdl:part element="SysEvtNtfctn" name="SysEvtNtfctn"/>
-  </wsdl:message>
-  <wsdl:message name="SysEvtNtfctn_fault1">
-    <wsdl:part element="SysEvtNtfctn" name="SysEvtNtfctn"/>
-  </wsdl:message>
-  <wsdl:message name="FinInstnId_in">
-    <wsdl:part element="FinInstnId" name="FinInstnId"/>
-  </wsdl:message>
-  <wsdl:message name="FinInstnId_out">
-    <wsdl:part element="FinInstnId" name="FinInstnId"/>
-  </wsdl:message>
-  <wsdl:message name="FinInstnId_fault1">
-    <wsdl:part element="FinInstnId" name="FinInstnId"/>
-  </wsdl:message>
-  <wsdl:message name="Fr_in">
-    <wsdl:part element="Fr" name="Fr"/>
-  </wsdl:message>
-  <wsdl:message name="Fr_out">
-    <wsdl:part element="Fr" name="Fr"/>
-  </wsdl:message>
-  <wsdl:message name="Fr_fault1">
-    <wsdl:part element="Fr" name="Fr"/>
-  </wsdl:message>
-  <wsdl:message name="AppHdr_in">
-    <wsdl:part element="AppHdr" name="AppHdr"/>
-  </wsdl:message>
-  <wsdl:message name="AppHdr_out">
-    <wsdl:part element="AppHdr" name="AppHdr"/>
-  </wsdl:message>
-  <wsdl:message name="AppHdr_fault1">
-    <wsdl:part element="AppHdr" name="AppHdr"/>
-  </wsdl:message>
-  <wsdl:message name="To_in">
-    <wsdl:part element="To" name="To"/>
-  </wsdl:message>
-  <wsdl:message name="To_out">
-    <wsdl:part element="To" name="To"/>
-  </wsdl:message>
-  <wsdl:message name="To_fault1">
-    <wsdl:part element="To" name="To"/>
-  </wsdl:message>
-  <wsdl:message name="EvtInf_in">
-    <wsdl:part element="EvtInf" name="EvtInf"/>
-  </wsdl:message>
-  <wsdl:message name="EvtInf_out">
-    <wsdl:part element="EvtInf" name="EvtInf"/>
-  </wsdl:message>
-  <wsdl:message name="EvtInf_fault1">
-    <wsdl:part element="EvtInf" name="EvtInf"/>
-  </wsdl:message>
-  <wsdl:message name="RequestPayload_in">
-    <wsdl:part element="RequestPayload" name="RequestPayload"/>
-  </wsdl:message>
-  <wsdl:message name="RequestPayload_out">
-    <wsdl:part element="RequestPayload" name="RequestPayload"/>
-  </wsdl:message>
-  <wsdl:message name="RequestPayload_fault1">
-    <wsdl:part element="RequestPayload" name="RequestPayload"/>
-  </wsdl:message>
-  <wsdl:message name="FIID_in">
-    <wsdl:part element="FIId" name="FIId"/>
-  </wsdl:message>
-  <wsdl:message name="FIID_out">
-    <wsdl:part element="FIId" name="FIId"/>
-  </wsdl:message>
-  <wsdl:message name="FIID_fault1">
-    <wsdl:part element="FIId" name="FIId"/>
-  </wsdl:message>
-  <wsdl:message name="Document_in">
-    <wsdl:part element="Document" name="Document"/>
-  </wsdl:message>
-  <wsdl:message name="Document_out">
-    <wsdl:part element="Document" name="Document"/>
-  </wsdl:message>
-  <wsdl:message name="Document_fault1">
-    <wsdl:part element="Document" name="Document"/>
-  </wsdl:message>
-  <wsdl:message name="ClrSysMmbld_in">
-    <wsdl:part element="ClrSysMmbId" name="ClrSysMmbId"/>
-  </wsdl:message>
-  <wsdl:message name="ClrSysMmbld_out">
-    <wsdl:part element="ClrSysMmbId" name="ClrSysMmbId"/>
-  </wsdl:message>
-  <wsdl:message name="ClrSysMmbld_fault1">
-    <wsdl:part element="ClrSysMmbId" name="ClrSysMmbId"/>
-  </wsdl:message>
-  <wsdl:portType name="AdmiPortType">
-    <wsdl:operation name="SysEvtNtfctn">
-      <wsdl:input message="SysEvtNtfctn_in" name="SysEvtNtfctn_Input"/>
-      <wsdl:output message="SysEvtNtfctn_out" name="SysEvtNtfctn_Output"/>
-      <wsdl:fault message="SysEvtNtfctn_fault1" name="SysEvtNtfctn_Fault"/>
-    </wsdl:operation>
-    <wsdl:operation name="FinInstnId">
-      <wsdl:input message="FinInstnId_in" name="FinInstnId_Input"/>
-      <wsdl:output message="FinInstnId_out" name="FinInstnId_Output"/>
-      <wsdl:fault message="FinInstnId_fault1" name="FinInstnId_Fault"/>
-    </wsdl:operation>
-    <wsdl:operation name="Fr">
-      <wsdl:input message="Fr_in" name="Fr_Input"/>
-      <wsdl:output message="Fr_out" name="Fr_Output"/>
-      <wsdl:fault message="Fr_fault1" name="Fr_Fault"/>
-    </wsdl:operation>
-    <wsdl:operation name="AppHdr">
-      <wsdl:input message="AppHdr_in" name="AppHdr_Input"/>
-      <wsdl:output message="AppHdr_out" name="AppHdr_Output"/>
-      <wsdl:fault message="AppHdr_fault1" name="AppHdr_Fault"/>
-    </wsdl:operation>
-    <wsdl:operation name="To">
-      <wsdl:input message="To_in" name="To_Input"/>
-      <wsdl:output message="To_out" name="To_Output"/>
-      <wsdl:fault message="To_fault1" name="To_Fault"/>
-    </wsdl:operation>
-    <wsdl:operation name="EvtInf">
-      <wsdl:input message="EvtInf_in" name="EvtInf_Input"/>
-      <wsdl:output message="EvtInf_out" name="EvtInf_Output"/>
-      <wsdl:fault message="EvtInf_fault1" name="EvtInf_Fault"/>
-    </wsdl:operation>
-    <wsdl:operation name="RequestPayload">
-      <wsdl:input message="RequestPayload_in" name="RequestPayload_Input"/>
-      <wsdl:output message="RequestPayload_out" name="RequestPayload_Output"/>
-      <wsdl:fault message="RequestPayload_fault1" name="RequestPayload_Fault"/>
-    </wsdl:operation>
-    <wsdl:operation name="FIID">
-      <wsdl:input message="FIID_in" name="FIID_Input"/>
-      <wsdl:output message="FIID_out" name="FIID_Output"/>
-      <wsdl:fault message="FIID_fault1" name="FIID_Fault"/>
-    </wsdl:operation>
-    <wsdl:operation name="Document">
-      <wsdl:input message="Document_in" name="Document_Input"/>
-      <wsdl:output message="Document_out" name="Document_Output"/>
-      <wsdl:fault message="Document_fault1" name="Document_Fault"/>
-    </wsdl:operation>
-    <wsdl:operation name="ClrSysMmbld">
-      <wsdl:input message="ClrSysMmbld_in" name="ClrSysMmbld_Input"/>
-      <wsdl:output message="ClrSysMmbld_out" name="ClrSysMmbld_Output"/>
-      <wsdl:fault message="ClrSysMmbld_fault1" name="ClrSysMmbld_Fault"/>
-    </wsdl:operation>
-  </wsdl:portType>
-  <wsdl:binding name="AdmiSOAP_HTTP_Binding" type="AdmiPortType">
-    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
-    <wsdl:operation name="SysEvtNtfctn">
-      <soap:operation soapAction=""/>
-      <wsdl:input name="SysEvtNtfctn_Input">
-        <soap:body parts="SysEvtNtfctn" use="literal"/>
-      </wsdl:input>
-      <wsdl:output name="SysEvtNtfctn_Output">
-        <soap:body parts="SysEvtNtfctn" use="literal"/>
-      </wsdl:output>
-      <wsdl:fault name="SysEvtNtfctn_Fault">
-        <soap:fault name="SysEvtNtfctn_Fault" use="literal"/>
-      </wsdl:fault>
-    </wsdl:operation>
-    <wsdl:operation name="FinInstnId">
-      <soap:operation soapAction=""/>
-      <wsdl:input name="FinInstnId_Input">
-        <soap:body parts="FinInstnId" use="literal"/>
-      </wsdl:input>
-      <wsdl:output name="FinInstnId_Output">
-        <soap:body parts="FinInstnId" use="literal"/>
-      </wsdl:output>
-      <wsdl:fault name="FinInstnId_Fault">
-        <soap:fault name="FinInstnId_Fault" use="literal"/>
-      </wsdl:fault>
-    </wsdl:operation>
-    <wsdl:operation name="Fr">
-      <soap:operation soapAction=""/>
-      <wsdl:input name="Fr_Input">
-        <soap:body parts="Fr" use="literal"/>
-      </wsdl:input>
-      <wsdl:output name="Fr_Output">
-        <soap:body parts="Fr" use="literal"/>
-      </wsdl:output>
-      <wsdl:fault name="Fr_Fault">
-        <soap:fault name="Fr_Fault" use="literal"/>
-      </wsdl:fault>
-    </wsdl:operation>
-    <wsdl:operation name="AppHdr">
-      <soap:operation soapAction=""/>
-      <wsdl:input name="AppHdr_Input">
-        <soap:body parts="AppHdr" use="literal"/>
-      </wsdl:input>
-      <wsdl:output name="AppHdr_Output">
-        <soap:body parts="AppHdr" use="literal"/>
-      </wsdl:output>
-      <wsdl:fault name="AppHdr_Fault">
-        <soap:fault name="AppHdr_Fault" use="literal"/>
-      </wsdl:fault>
-    </wsdl:operation>
-    <wsdl:operation name="To">
-      <soap:operation soapAction=""/>
-      <wsdl:input name="To_Input">
-        <soap:body parts="To" use="literal"/>
-      </wsdl:input>
-      <wsdl:output name="To_Output">
-        <soap:body parts="To" use="literal"/>
-      </wsdl:output>
-      <wsdl:fault name="To_Fault">
-        <soap:fault name="To_Fault" use="literal"/>
-      </wsdl:fault>
-    </wsdl:operation>
-    <wsdl:operation name="EvtInf">
-      <soap:operation soapAction=""/>
-      <wsdl:input name="EvtInf_Input">
-        <soap:body parts="EvtInf" use="literal"/>
-      </wsdl:input>
-      <wsdl:output name="EvtInf_Output">
-        <soap:body parts="EvtInf" use="literal"/>
-      </wsdl:output>
-      <wsdl:fault name="EvtInf_Fault">
-        <soap:fault name="EvtInf_Fault" use="literal"/>
-      </wsdl:fault>
-    </wsdl:operation>
-    <wsdl:operation name="RequestPayload">
-      <soap:operation soapAction=""/>
-      <wsdl:input name="RequestPayload_Input">
-        <soap:body parts="RequestPayload" use="literal"/>
-      </wsdl:input>
-      <wsdl:output name="RequestPayload_Output">
-        <soap:body parts="RequestPayload" use="literal"/>
-      </wsdl:output>
-      <wsdl:fault name="RequestPayload_Fault">
-        <soap:fault name="RequestPayload_Fault" use="literal"/>
-      </wsdl:fault>
-    </wsdl:operation>
-    <wsdl:operation name="FIID">
-      <soap:operation soapAction=""/>
-      <wsdl:input name="FIID_Input">
-        <soap:body parts="FIId" use="literal"/>
-      </wsdl:input>
-      <wsdl:output name="FIID_Output">
-        <soap:body parts="FIId" use="literal"/>
-      </wsdl:output>
-      <wsdl:fault name="FIID_Fault">
-        <soap:fault name="FIID_Fault" use="literal"/>
-      </wsdl:fault>
-    </wsdl:operation>
-    <wsdl:operation name="Document">
-      <soap:operation soapAction=""/>
-      <wsdl:input name="Document_Input">
-        <soap:body parts="Document" use="literal"/>
-      </wsdl:input>
-      <wsdl:output name="Document_Output">
-        <soap:body parts="Document" use="literal"/>
-      </wsdl:output>
-      <wsdl:fault name="Document_Fault">
-        <soap:fault name="Document_Fault" use="literal"/>
-      </wsdl:fault>
-    </wsdl:operation>
-    <wsdl:operation name="ClrSysMmbld">
-      <soap:operation soapAction=""/>
-      <wsdl:input name="ClrSysMmbld_Input">
-        <soap:body parts="ClrSysMmbId" use="literal"/>
-      </wsdl:input>
-      <wsdl:output name="ClrSysMmbld_Output">
-        <soap:body parts="ClrSysMmbId" use="literal"/>
-      </wsdl:output>
-      <wsdl:fault name="ClrSysMmbld_Fault">
-        <soap:fault name="ClrSysMmbld_Fault" use="literal"/>
-      </wsdl:fault>
-    </wsdl:operation>
-  </wsdl:binding>
-  <wsdl:service name="AdmiSOAP_HTTP_Service">
-    <wsdl:port binding="AdmiSOAP_HTTP_Binding" name="AdmiSOAP_HTTP_Port">
-      <soap:address location="http://localhost:7800/AdmiSOAP_HTTP_Service"/>
-    </wsdl:port>
-  </wsdl:service>
-</wsdl:definitions>
+=============================================================================================================
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:admi="http://tempuri.org/Admi">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <admi:RequestPayload>
+            <admi:AppHdr xm="exampleValue">
+                <admi:Fr>
+                    <admi:FIId>
+                        <admi:FinInstnId>
+                            <admi:ClrSysMmbId>
+                                <admi:MmbId>FR123456</admi:MmbId>
+                            </admi:ClrSysMmbId>
+                        </admi:FinInstnId>
+                    </admi:FIId>
+                </admi:Fr>
+                <admi:To>
+                    <admi:FIId>
+                        <admi:FinInstnId>
+                            <admi:ClrSysMmbId>
+                                <admi:MmbId>TO987654</admi:MmbId>
+                            </admi:ClrSysMmbId>
+                        </admi:FinInstnId>
+                    </admi:FIId>
+                </admi:To>
+                <admi:BizMsgIdr>987654</admi:BizMsgIdr>
+                <admi:MsgDefIdr>pacs.002.001.09</admi:MsgDefIdr>
+                <admi:BizSvc>TransferService</admi:BizSvc>
+                <admi:CreDt>2025-04-14T10:30:00Z</admi:CreDt>
+            </admi:AppHdr>
+            <admi:Document>
+                <admi:SysEvtNtfctn>
+                    <admi:EvtInf>
+                        <admi:EvtCd>EVT001</admi:EvtCd>
+                        <admi:EvtParam>Threshold breach</admi:EvtParam>
+                        <admi:EvtDesc>System threshold exceeded during processing.</admi:EvtDesc>
+                        <admi:EvtTm>2025-04-14T10:45:00Z</admi:EvtTm>
+                    </admi:EvtInf>
+                </admi:SysEvtNtfctn>
+            </admi:Document>
+        </admi:RequestPayload>
+    </soapenv:Body>
+</soapenv:Envelope>
