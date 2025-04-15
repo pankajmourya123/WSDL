@@ -1,66 +1,37 @@
-<RequestPayload>
-    <AppHdr  xmlns:xsi="urn:iso:std:iso:20022:tech:xsd:Header" xmlns="urn:iso:std:iso:20022:tech:xsd:head.001.001.02">
-        <Fr>
-            <FIId>
-                <FinInstnId>
-                    <ClrSysMmbId>
-                        <MmbId>RBIP0NEFTSC</MmbId>
-                    </ClrSysMmbId>
-                </FinInstnId>
-            </FIId>
-        </Fr>
-        <To>
-            <FIId>
-                <FinInstnId>
-                    <ClrSysMmbId>
-                        <MmbId>GSCB0000001</MmbId>
-                    </ClrSysMmbId>
-                </FinInstnId>
-            </FIId>
-        </To>
-        <BizMsgIdr>GSCB202412105310110020</BizMsgIdr>
-        <MsgDefIdr>admi.004.001.02</MsgDefIdr>
-        <BizSvc>NEFT</BizSvc>
-        <CreDt>2024-12-10T12:26:49Z</CreDt>
-    </AppHdr>
-    <Document xmlns="urn:iso:std:iso:20022:tech:xsd:admi.004.001.02">
-        <SysEvtNtfctn>
-            <EvtInf>
-                <EvtCd>F27</EvtCd>
-                <EvtParam>PBAPI000000</EvtParam>
-                <EvtDesc>Message sent successfully.</EvtDesc>
-                <EvtTm>2024-12-10T12:26:49</EvtTm>
-            </EvtInf>
-        </SysEvtNtfctn>
-    </Document>
-</RequestPayload>
-
-====================================================================================
-<?xml version="1.0" encoding="utf-8"?>
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
-    <soapenv:Body>
-        <soapenv:Fault>
-            <faultcode>soapenv:</faultcode>
-            <faultstring>First Element must contain the local name, Envelope , but found RequestPayload</faultstring>
-            <detail>
-                <Exception>org.apache.axis2.AxisFault: Exception during creation of SOAP envelope&#xD;
-	at com.ibm.broker.axis2.Axis2Invoker.invokeAxis2(Axis2Invoker.java:3009)&#xD;
-	at com.ibm.broker.axis2.TomcatNodeRegistrationUtil.invokeAxis2(TomcatNodeRegistrationUtil.java:426)&#xD;
-	at com.ibm.broker.axis2.TomcatNodeRegistrationUtil.invokeAxis2Native(TomcatNodeRegistrationUtil.java:240)&#xD;
-Caused by: org.apache.axiom.soap.SOAPProcessingException: First Element must contain the local name, Envelope , but found RequestPayload&#xD;
-	at org.apache.axiom.soap.impl.builder.StAXSOAPModelBuilder.constructNode(StAXSOAPModelBuilder.java:305)&#xD;
-	at org.apache.axiom.soap.impl.builder.StAXSOAPModelBuilder.createOMElement(StAXSOAPModelBuilder.java:252)&#xD;
-	at org.apache.axiom.soap.impl.builder.StAXSOAPModelBuilder.createNextOMElement(StAXSOAPModelBuilder.java:234)&#xD;
-	at org.apache.axiom.om.impl.builder.StAXOMBuilder.next(StAXOMBuilder.java:249)&#xD;
-	at org.apache.axiom.soap.impl.builder.StAXSOAPModelBuilder.getSOAPEnvelope(StAXSOAPModelBuilder.java:204)&#xD;
-	at org.apache.axiom.soap.impl.builder.StAXSOAPModelBuilder.&lt;init&gt;(StAXSOAPModelBuilder.java:154)&#xD;
-	at org.apache.axiom.soap.impl.builder.StAXSOAPModelBuilder.&lt;init&gt;(StAXSOAPModelBuilder.java:140)&#xD;
-	at com.ibm.broker.axis2.SoapUtilities.createSOAPMessage(SoapUtilities.java:2261)&#xD;
-	at com.ibm.broker.axis2.SoapUtilities.createSOAPMessage(SoapUtilities.java:1960)&#xD;
-	at com.ibm.broker.axis2.Axis2Invoker.invokeAxis2(Axis2Invoker.java:3005)&#xD;
-	... 2 more&#xD;
-</Exception>
-            </detail>
-        </soapenv:Fault>
-    </soapenv:Body>
+   <soapenv:Header/>
+   <soapenv:Body>
+      <RequestPayload>
+         <AppHdr xmlns:xsi="urn:iso:std:iso:20022:tech:xsd:Header"
+                 xmlns="urn:iso:std:iso:20022:tech:xsd:head.001.001.02">
+            <!-- ... your AppHdr content ... -->
+         </AppHdr>
+         <Document xmlns="urn:iso:std:iso:20022:tech:xsd:admi.004.001.02">
+            <!-- ... your Document content ... -->
+         </Document>
+      </RequestPayload>
+   </soapenv:Body>
 </soapenv:Envelope>
+CREATE COMPUTE MODULE ExtractSoapBody
+    CREATE FUNCTION Main() RETURNS BOOLEAN
+    BEGIN
+        -- Declare a reference to the incoming SOAP message
+        DECLARE inRef REFERENCE TO InputRoot;
+        
+        -- Declare a reference to the SOAP Body
+        DECLARE bodyRef REFERENCE TO inRef.SOAP:Envelope.SOAP:Body;
+        
+        -- Create a new OutputRoot with only the SOAP Body content
+        CREATE LASTCHILD OF OutputRoot DOMAIN('XMLNSC') NAME 'RequestPayload';
+        
+        -- Copy the body content into OutputRoot
+        DECLARE childRef REFERENCE TO bodyRef.*[1];  -- Get first child inside Body
+        WHILE LASTMOVE(childRef) DO
+            -- Copy each child from the SOAP Body to OutputRoot.RequestPayload
+            CREATE LASTCHILD OF OutputRoot.RequestPayload FROM childRef;
+            MOVE childRef NEXTSIBLING;
+        END WHILE;
+        
+        RETURN TRUE;
+    END;
+END MODULE;
