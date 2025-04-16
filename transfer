@@ -1,39 +1,5 @@
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:admi="http://tempuri.org/Admi">
-   <soapenv:Header/>
-   <soapenv:Body>
-      <admi:AppHdr xm="?">
-         <admi:Fr>
-            <admi:FIId>
-               <admi:FinInstnId>
-                  <admi:ClrSysMmbId>
-                     <admi:MmbId>123</admi:MmbId>
-                  </admi:ClrSysMmbId>
-               </admi:FinInstnId>
-            </admi:FIId>
-         </admi:Fr>
-         <admi:To>
-            <admi:FIId>
-               <admi:FinInstnId>
-                  <admi:ClrSysMmbId>
-                     <admi:MmbId>345</admi:MmbId>
-                  </admi:ClrSysMmbId>
-               </admi:FinInstnId>
-            </admi:FIId>
-         </admi:To>
-         <admi:BizMsgIdr>567</admi:BizMsgIdr>
-         <admi:MsgDefIdr>tttt</admi:MsgDefIdr>
-         <admi:BizSvc>8797</admi:BizSvc>
-         <admi:CreDt>8989989</admi:CreDt>
-      </admi:AppHdr>
-   </soapenv:Body>
-</soapenv:Envelope>
-=========================================================================================================================================
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
-   <soapenv:Header/>
-   <soapenv:Body>
-      <RequestPayload>
-        
-         <AppHdr  xmlns:xsi="urn:iso:std:iso:20022:tech:xsd:Header" xmlns="urn:iso:std:iso:20022:tech:xsd:head.001.001.02">
+<RequestPayload>
+    <AppHdr  xmlns:xsi="urn:iso:std:iso:20022:tech:xsd:Header" xmlns="urn:iso:std:iso:20022:tech:xsd:head.001.001.02">
         <Fr>
             <FIId>
                 <FinInstnId>
@@ -57,8 +23,7 @@
         <BizSvc>NEFT</BizSvc>
         <CreDt>2024-12-10T12:26:49Z</CreDt>
     </AppHdr>
-
-         <Document xmlns="urn:iso:std:iso:20022:tech:xsd:admi.004.001.02">
+    <Document xmlns="urn:iso:std:iso:20022:tech:xsd:admi.004.001.02">
         <SysEvtNtfctn>
             <EvtInf>
                 <EvtCd>F27</EvtCd>
@@ -68,7 +33,4 @@
             </EvtInf>
         </SysEvtNtfctn>
     </Document>
-
-      </RequestPayload>
-   </soapenv:Body>
-</soapenv:Envelope>
+</RequestPayload>
