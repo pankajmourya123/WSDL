@@ -3,35 +3,40 @@ CREATE COMPUTE MODULE CreateRequestPayload_Compute
 	BEGIN
 		CALL CopyMessageHeaders();
 
-		-- Root element
+		-- Declare namespaces
+		DECLARE ns1 NAMESPACE 'urn:iso:std:iso:20022:tech:xsd:head.001.001.02';
+		DECLARE ns2 NAMESPACE 'urn:iso:std:iso:20022:tech:xsd:admi.004.001.02';
+		DECLARE xsi NAMESPACE 'urn:iso:std:iso:20022:tech:xsd:Header';
+
+		-- Create RequestPayload root
 		CREATE FIELD OutputRoot.XMLNSC.RequestPayload;
 
-		-- AppHdr
-		DECLARE hdr REFERENCE TO OutputRoot.XMLNSC.RequestPayload.AppHdr;
-		SET hdr.(XMLNSC.NamespaceDecl)xmlns:xsi = 'urn:iso:std:iso:20022:tech:xsd:Header';
-		SET hdr.(XMLNSC.NamespaceDecl)xmlns = 'urn:iso:std:iso:20022:tech:xsd:head.001.001.02';
+		-- AppHdr with prefix binding
+		CREATE FIELD OutputRoot.XMLNSC.RequestPayload.ns1:AppHdr;
+		SET OutputRoot.XMLNSC.RequestPayload.ns1:AppHdr.(XMLNSC.NamespaceDecl)xmlns:ns1 = ns1;
+		SET OutputRoot.XMLNSC.RequestPayload.ns1:AppHdr.(XMLNSC.NamespaceDecl)xmlns:xsi = xsi;
 
-		-- AppHdr/Fr
-		CREATE FIELD hdr.Fr.FIId.FinInstnId.ClrSysMmbId.MmbId VALUE 'RBIP0NEFTSC';
+		-- AppHdr -> Fr
+		CREATE FIELD OutputRoot.XMLNSC.RequestPayload.ns1:AppHdr.ns1:Fr.ns1:FIId.ns1:FinInstnId.ns1:ClrSysMmbId.ns1:MmbId VALUE 'RBIP0NEFTSC';
 
-		-- AppHdr/To
-		CREATE FIELD hdr.To.FIId.FinInstnId.ClrSysMmbId.MmbId VALUE 'GSCB0000001';
+		-- AppHdr -> To
+		CREATE FIELD OutputRoot.XMLNSC.RequestPayload.ns1:AppHdr.ns1:To.ns1:FIId.ns1:FinInstnId.ns1:ClrSysMmbId.ns1:MmbId VALUE 'GSCB0000001';
 
-		-- AppHdr additional fields
-		CREATE FIELD hdr.BizMsgIdr VALUE 'GSCB202412105310110020';
-		CREATE FIELD hdr.MsgDefIdr VALUE 'admi.004.001.02';
-		CREATE FIELD hdr.BizSvc VALUE 'NEFT';
-		CREATE FIELD hdr.CreDt VALUE '2024-12-10T12:26:49Z';
+		-- AppHdr other fields
+		CREATE FIELD OutputRoot.XMLNSC.RequestPayload.ns1:AppHdr.ns1:BizMsgIdr VALUE 'GSCB202412105310110020';
+		CREATE FIELD OutputRoot.XMLNSC.RequestPayload.ns1:AppHdr.ns1:MsgDefIdr VALUE 'admi.004.001.02';
+		CREATE FIELD OutputRoot.XMLNSC.RequestPayload.ns1:AppHdr.ns1:BizSvc VALUE 'NEFT';
+		CREATE FIELD OutputRoot.XMLNSC.RequestPayload.ns1:AppHdr.ns1:CreDt VALUE '2024-12-10T12:26:49Z';
 
-		-- Document
-		DECLARE doc REFERENCE TO OutputRoot.XMLNSC.RequestPayload.Document;
-		SET doc.(XMLNSC.NamespaceDecl)xmlns = 'urn:iso:std:iso:20022:tech:xsd:admi.004.001.02';
+		-- Document with default namespace (no prefix)
+		CREATE FIELD OutputRoot.XMLNSC.RequestPayload.Document;
+		SET OutputRoot.XMLNSC.RequestPayload.Document.(XMLNSC.NamespaceDecl)xmlns = ns2;
 
-		-- Document/SysEvtNtfctn
-		CREATE FIELD doc.SysEvtNtfctn.EvtInf.EvtCd VALUE 'F27';
-		CREATE FIELD doc.SysEvtNtfctn.EvtInf.EvtParam VALUE 'PBAPI000000';
-		CREATE FIELD doc.SysEvtNtfctn.EvtInf.EvtDesc VALUE 'Message sent successfully.';
-		CREATE FIELD doc.SysEvtNtfctn.EvtInf.EvtTm VALUE '2024-12-10T12:26:49';
+		-- Document -> SysEvtNtfctn
+		CREATE FIELD OutputRoot.XMLNSC.RequestPayload.Document.SysEvtNtfctn.EvtInf.EvtCd VALUE 'F27';
+		CREATE FIELD OutputRoot.XMLNSC.RequestPayload.Document.SysEvtNtfctn.EvtInf.EvtParam VALUE 'PBAPI000000';
+		CREATE FIELD OutputRoot.XMLNSC.RequestPayload.Document.SysEvtNtfctn.EvtInf.EvtDesc VALUE 'Message sent successfully.';
+		CREATE FIELD OutputRoot.XMLNSC.RequestPayload.Document.SysEvtNtfctn.EvtInf.EvtTm VALUE '2024-12-10T12:26:49';
 
 		RETURN TRUE;
 	END;
