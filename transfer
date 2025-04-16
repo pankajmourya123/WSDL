@@ -1,36 +1,47 @@
-<RequestPayload>
-    <AppHdr  xmlns:xsi="urn:iso:std:iso:20022:tech:xsd:Header" xmlns="urn:iso:std:iso:20022:tech:xsd:head.001.001.02">
-        <Fr>
-            <FIId>
-                <FinInstnId>
-                    <ClrSysMmbId>
-                        <MmbId>RBIP0NEFTSC</MmbId>
-                    </ClrSysMmbId>
-                </FinInstnId>
-            </FIId>
-        </Fr>
-        <To>
-            <FIId>
-                <FinInstnId>
-                    <ClrSysMmbId>
-                        <MmbId>GSCB0000001</MmbId>
-                    </ClrSysMmbId>
-                </FinInstnId>
-            </FIId>
-        </To>
-        <BizMsgIdr>GSCB202412105310110020</BizMsgIdr>
-        <MsgDefIdr>admi.004.001.02</MsgDefIdr>
-        <BizSvc>NEFT</BizSvc>
-        <CreDt>2024-12-10T12:26:49Z</CreDt>
-    </AppHdr>
-    <Document xmlns="urn:iso:std:iso:20022:tech:xsd:admi.004.001.02">
-        <SysEvtNtfctn>
-            <EvtInf>
-                <EvtCd>F27</EvtCd>
-                <EvtParam>PBAPI000000</EvtParam>
-                <EvtDesc>Message sent successfully.</EvtDesc>
-                <EvtTm>2024-12-10T12:26:49</EvtTm>
-            </EvtInf>
-        </SysEvtNtfctn>
-    </Document>
-</RequestPayload>
+CREATE COMPUTE MODULE CreateRequestPayload_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		CALL CopyMessageHeaders();
+
+		-- Root element
+		CREATE FIELD OutputRoot.XMLNSC.RequestPayload;
+
+		-- AppHdr
+		DECLARE hdr REFERENCE TO OutputRoot.XMLNSC.RequestPayload.AppHdr;
+		SET hdr.(XMLNSC.NamespaceDecl)xmlns:xsi = 'urn:iso:std:iso:20022:tech:xsd:Header';
+		SET hdr.(XMLNSC.NamespaceDecl)xmlns = 'urn:iso:std:iso:20022:tech:xsd:head.001.001.02';
+
+		-- AppHdr/Fr
+		CREATE FIELD hdr.Fr.FIId.FinInstnId.ClrSysMmbId.MmbId VALUE 'RBIP0NEFTSC';
+
+		-- AppHdr/To
+		CREATE FIELD hdr.To.FIId.FinInstnId.ClrSysMmbId.MmbId VALUE 'GSCB0000001';
+
+		-- AppHdr additional fields
+		CREATE FIELD hdr.BizMsgIdr VALUE 'GSCB202412105310110020';
+		CREATE FIELD hdr.MsgDefIdr VALUE 'admi.004.001.02';
+		CREATE FIELD hdr.BizSvc VALUE 'NEFT';
+		CREATE FIELD hdr.CreDt VALUE '2024-12-10T12:26:49Z';
+
+		-- Document
+		DECLARE doc REFERENCE TO OutputRoot.XMLNSC.RequestPayload.Document;
+		SET doc.(XMLNSC.NamespaceDecl)xmlns = 'urn:iso:std:iso:20022:tech:xsd:admi.004.001.02';
+
+		-- Document/SysEvtNtfctn
+		CREATE FIELD doc.SysEvtNtfctn.EvtInf.EvtCd VALUE 'F27';
+		CREATE FIELD doc.SysEvtNtfctn.EvtInf.EvtParam VALUE 'PBAPI000000';
+		CREATE FIELD doc.SysEvtNtfctn.EvtInf.EvtDesc VALUE 'Message sent successfully.';
+		CREATE FIELD doc.SysEvtNtfctn.EvtInf.EvtTm VALUE '2024-12-10T12:26:49';
+
+		RETURN TRUE;
+	END;
+
+	CREATE PROCEDURE CopyMessageHeaders() BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER CARDINALITY(InputRoot.*[]);
+		WHILE I < J DO
+			SET OutputRoot.*[I] = InputRoot.*[I];
+			SET I = I + 1;
+		END WHILE;
+	END;
+END MODULE;
