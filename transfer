@@ -1,136 +1,42 @@
-Message
-	Properties
-			MessageSet:CHARACTER:
-			MessageType:CHARACTER:
-			MessageFormat:CHARACTER:
-			Encoding:INTEGER:546
-			CodedCharSetId:INTEGER:1208
-			Transactional:BOOLEAN:false
-			Persistence:BOOLEAN:false
-			CreationTime:TIMESTAMP:java.util.GregorianCalendar[time=1744763623299,areFieldsSet=true,areAllFieldsSet=false,lenient=true,zone=sun.util.calendar.ZoneInfo[id="Asia/Calcutta",offset=19800000,dstSavings=0,useDaylight=false,transitions=7,lastRule=null],firstDayOfWeek=1,minimalDaysInFirstWeek=1,ERA=?,YEAR=2025,MONTH=3,WEEK_OF_YEAR=?,WEEK_OF_MONTH=?,DAY_OF_MONTH=16,DAY_OF_YEAR=?,DAY_OF_WEEK=?,DAY_OF_WEEK_IN_MONTH=?,AM_PM=0,HOUR=6,HOUR_OF_DAY=6,MINUTE=3,SECOND=43,MILLISECOND=299,ZONE_OFFSET=?,DST_OFFSET=?]
-			ExpirationTime:INTEGER:-1
-			Priority:INTEGER:0
-			ReplyIdentifier:BLOB:[B@90742209
-			ReplyProtocol:CHARACTER:SOAP-AXIS2
-			Topic:UNKNOWN:null
-			ContentType:CHARACTER:text/plain
-			IdentitySourceType:CHARACTER:
-			IdentitySourceToken:CHARACTER:
-			IdentitySourcePassword:CHARACTER:
-			IdentitySourceIssuedBy:CHARACTER:
-			IdentityMappedType:CHARACTER:
-			IdentityMappedToken:CHARACTER:
-			IdentityMappedPassword:CHARACTER:
-			IdentityMappedIssuedBy:CHARACTER:
-	HTTPInputHeader
-			Content-Type:CHARACTER:text/plain
-			User-Agent:CHARACTER:PostmanRuntime/7.43.3
-			Accept:CHARACTER:*/*
-			Cache-Control:CHARACTER:no-cache
-			Postman-Token:CHARACTER:6a52b44d-d330-4e83-81eb-e00f71ce86ac
-			Host:CHARACTER:localhost:7800
-			Accept-Encoding:CHARACTER:gzip, deflate, br
-			Connection:CHARACTER:keep-alive
-			Content-Length:CHARACTER:1436
-			X-Original-HTTP-Command:CHARACTER:POST http://localhost:7800/AdmiSOAP_HTTP_Service HTTP/1.1
-			X-Server-Name:CHARACTER:localhost
-			X-Server-Port:CHARACTER:7800
-			X-Remote-Addr:CHARACTER:127.0.0.1
-			X-Remote-Host:CHARACTER:localhost
-			X-Scheme:CHARACTER:http
-	SOAP
-	CHARACTER:problem creating SOAP tree from bitstream
-	===========================================================================================
-	OutputRoot
-	Properties
-			MessageSet:CHARACTER:
-			MessageType:CHARACTER:
-			MessageFormat:CHARACTER:
-			Encoding:INTEGER:546
-			CodedCharSetId:INTEGER:1208
-			Transactional:BOOLEAN:false
-			Persistence:BOOLEAN:false
-			CreationTime:TIMESTAMP:java.util.GregorianCalendar[time=1744763623299,areFieldsSet=true,areAllFieldsSet=false,lenient=true,zone=sun.util.calendar.ZoneInfo[id="Asia/Calcutta",offset=19800000,dstSavings=0,useDaylight=false,transitions=7,lastRule=null],firstDayOfWeek=1,minimalDaysInFirstWeek=1,ERA=?,YEAR=2025,MONTH=3,WEEK_OF_YEAR=?,WEEK_OF_MONTH=?,DAY_OF_MONTH=16,DAY_OF_YEAR=?,DAY_OF_WEEK=?,DAY_OF_WEEK_IN_MONTH=?,AM_PM=0,HOUR=6,HOUR_OF_DAY=6,MINUTE=3,SECOND=43,MILLISECOND=299,ZONE_OFFSET=?,DST_OFFSET=?]
-			ExpirationTime:INTEGER:-1
-			Priority:INTEGER:0
-			ReplyIdentifier:BLOB:[B@2a855418
-			ReplyProtocol:CHARACTER:SOAP-AXIS2
-			Topic:UNKNOWN:null
-			ContentType:CHARACTER:text/plain
-			IdentitySourceType:CHARACTER:
-			IdentitySourceToken:CHARACTER:
-			IdentitySourcePassword:CHARACTER:
-			IdentitySourceIssuedBy:CHARACTER:
-			IdentityMappedType:CHARACTER:
-			IdentityMappedToken:CHARACTER:
-			IdentityMappedPassword:CHARACTER:
-			IdentityMappedIssuedBy:CHARACTER:
-	HTTPInputHeader
-			Content-Type:CHARACTER:text/plain
-			User-Agent:CHARACTER:PostmanRuntime/7.43.3
-			Accept:CHARACTER:*/*
-			Cache-Control:CHARACTER:no-cache
-			Postman-Token:CHARACTER:6a52b44d-d330-4e83-81eb-e00f71ce86ac
-			Host:CHARACTER:localhost:7800
-			Accept-Encoding:CHARACTER:gzip, deflate, br
-			Connection:CHARACTER:keep-alive
-			Content-Length:CHARACTER:1436
-			X-Original-HTTP-Command:CHARACTER:POST http://localhost:7800/AdmiSOAP_HTTP_Service HTTP/1.1
-			X-Server-Name:CHARACTER:localhost
-			X-Server-Port:CHARACTER:7800
-			X-Remote-Addr:CHARACTER:127.0.0.1
-			X-Remote-Host:CHARACTER:localhost
-			X-Scheme:CHARACTER:http
-	SOAP
-	CHARACTER:problem creating SOAP tree from bitstream
-
-
-======================================================
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
    <soapenv:Header/>
    <soapenv:Body>
       <RequestPayload>
-        
-         <AppHdr  xmlns:xsi="urn:iso:std:iso:20022:tech:xsd:Header" xmlns="urn:iso:std:iso:20022:tech:xsd:head.001.001.02">
-        <Fr>
-            <FIId>
-                <FinInstnId>
-                    <ClrSysMmbId>
+         <AppHdr xmlns:xsi="urn:iso:std:iso:20022:tech:xsd:Header" xmlns="urn:iso:std:iso:20022:tech:xsd:head.001.001.02">
+            <Fr>
+               <FIId>
+                  <FinInstnId>
+                     <ClrSysMmbId>
                         <MmbId>RBIP0NEFTSC</MmbId>
-                    </ClrSysMmbId>
-                </FinInstnId>
-            </FIId>
-        </Fr>
-        <To>
-            <FIId>
-                <FinInstnId>
-                    <ClrSysMmbId>
+                     </ClrSysMmbId>
+                  </FinInstnId>
+               </FIId>
+            </Fr>
+            <To>
+               <FIId>
+                  <FinInstnId>
+                     <ClrSysMmbId>
                         <MmbId>GSCB0000001</MmbId>
-                    </ClrSysMmbId>
-                </FinInstnId>
-            </FIId>
-        </To>
-        <BizMsgIdr>GSCB202412105310110020</BizMsgIdr>
-        <MsgDefIdr>admi.004.001.02</MsgDefIdr>
-        <BizSvc>NEFT</BizSvc>
-        <CreDt>2024-12-10T12:26:49Z</CreDt>
-    </AppHdr>
+                     </ClrSysMmbId>
+                  </FinInstnId>
+               </FIId>
+            </To>
+            <BizMsgIdr>GSCB202412105310110020</BizMsgIdr>
+            <MsgDefIdr>admi.004.001.02</MsgDefIdr>
+            <BizSvc>NEFT</BizSvc>
+            <CreDt>2024-12-10T12:26:49Z</CreDt>
+         </AppHdr>
 
          <Document xmlns="urn:iso:std:iso:20022:tech:xsd:admi.004.001.02">
-        <SysEvtNtfctn>
-            <EvtInf>
-                <EvtCd>F27</EvtCd>
-                <EvtParam>PBAPI000000</EvtParam>
-                <EvtDesc>Message sent successfully.</EvtDesc>
-                <EvtTm>2024-12-10T12:26:49</EvtTm>
-            </EvtInf>
-        </SysEvtNtfctn>
-    </Document>
-
+            <SysEvtNtfctn>
+               <EvtInf>
+                  <EvtCd>F27</EvtCd>
+                  <EvtParam>PBAPI000000</EvtParam>
+                  <EvtDesc>Message sent successfully.</EvtDesc>
+                  <EvtTm>2024-12-10T12:26:49</EvtTm>
+               </EvtInf>
+            </SysEvtNtfctn>
+         </Document>
       </RequestPayload>
    </soapenv:Body>
 </soapenv:Envelope>
-	
-	
-	
-	
