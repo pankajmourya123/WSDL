@@ -284,3 +284,243 @@
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>
+--------------------------
+Here are detailed, structured notes from the provided article on Web Services Description Language (WSDL) — suitable for revision and long-term reference:
+
+
+---
+
+WSDL (Web Services Description Language) - Notes
+
+1. Introduction
+
+WSDL is an XML-based language for describing web services.
+
+Submitted as a standard to W3C (World Wide Web Consortium).
+
+WSDL allows:
+
+Description of business operations
+
+Separation of operations and their implementation details
+
+
+
+
+---
+
+2. Key Architectural Principles
+
+Abstract descriptions of:
+
+Messages (data exchanged)
+
+Port types (collections of operations)
+
+
+Concrete descriptions:
+
+Bindings (protocols and data formats)
+
+Ports (network address with bindings)
+
+
+Service: A collection of ports.
+
+
+
+---
+
+3. WSDL File Structure
+
+A. Web Service Interface Definition
+
+Includes elements and namespaces
+
+
+B. Web Service Implementation
+
+Includes services and ports
+
+
+
+---
+
+4. Core Elements of a WSDL Document
+
+a. portType
+
+Defines abstract operations and messages.
+
+
+<portType name="EightBall">
+  <operation name="getAnswer">
+    <input message="ebs:IngetAnswerRequest"/>
+    <output message="ebs:OutgetAnswerResponse"/>
+  </operation>
+</portType>
+
+
+---
+
+b. message
+
+Describes input/output parameters.
+
+
+<message name="IngetAnswerRequest">
+  <part name="meth1_inType" type="ebs:questionType"/>
+</message>
+<message name="OutgetAnswerResponse">
+  <part name="meth1_outType" type="ebs:answerType"/>
+</message>
+
+
+---
+
+c. types
+
+Contains XML Schema Definitions (XSD) for data types.
+
+
+<types>
+  <xsd:schema targetNamespace="...">
+    <xsd:complexType name="questionType">
+      <xsd:element name="question" type="string"/>
+    </xsd:complexType>
+  </xsd:schema>
+</types>
+
+
+---
+
+d. binding
+
+Specifies the protocol and format for operations.
+
+
+<binding name="EightBallBinding" type="ebs:EightBall">
+  <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+  <operation name="getAnswer">
+    <soap:operation soapAction="urn:EightBall"/>
+    <input>
+      <soap:body namespace="urn:EightBall"/>
+    </input>
+  </operation>
+</binding>
+
+
+---
+
+e. service and port
+
+Define web service location and access method.
+
+
+<service name="EightBall">
+  <port binding="ebs:EightBallBinding" name="EightBallPort">
+    <soap:address location="http://localhost:8080/axis/EightBall"/>
+  </port>
+</service>
+
+
+---
+
+5. Development Approaches
+
+JAX-WS (Java API for XML Web Services)
+
+Bottom-up: Start from Java class, generate WSDL using wsgen.
+
+Top-down: Start from WSDL, generate classes using wsimport.
+
+
+JAX-RPC (Java API for XML-based RPC)
+
+Start with implementation bean with Service Endpoint Interface (SEI)
+
+Use tools:
+
+Java2WSDL: Generates WSDL
+
+WSDL2Java: Generates Java classes
+
+
+
+
+---
+
+6. Multipart WSDL
+
+One WSDL imports another using <wsdl:import>
+
+Common structure:
+
+Interface WSDL: Abstract definitions
+
+Implementation WSDL: Service and port definitions
+
+
+File placement:
+
+EJB: META-INF/wsdl
+
+JavaBeans: WEB-INF/wsdl
+
+
+
+Import Rules
+
+Relative imports must be in the same directory
+
+Web URLs must be accessible at runtime
+
+
+
+---
+
+7. WSDL Publication
+
+Files in META-INF/wsdl or WEB-INF/wsdl can be:
+
+Referenced in <wsdl-file> of webservices.xml
+
+Published via file or URL
+
+
+Files not in these directories may not be published correctly
+
+
+
+---
+
+8. Annotation in JAX-WS
+
+Use @WebService(wsdlLocation="...") to specify WSDL file
+
+If not specified, WSDL is auto-generated from class annotations
+
+webservices.xml can override annotation values
+
+
+
+---
+
+9. Tools Summary
+
+
+---
+
+10. Best Practices
+
+Keep all WSDL/XSD in appropriate directories.
+
+Avoid relative paths in wsdl:import.
+
+Ensure all external WSDL/XSDs are accessible during deployment.
+
+
+
+---
+
+Let me know if you want this in PDF or formatted for OneNote, Notion, or any other platform.
