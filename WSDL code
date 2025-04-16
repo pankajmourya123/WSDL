@@ -1,3 +1,5 @@
+code according to the request 
+=================================================================================================================================================================
 DECLARE soapenv NAMESPACE 'http://schemas.xmlsoap.org/soap/envelope/';
 DECLARE tran NAMESPACE 'http://tempuri.org/Transaction';
 
@@ -33,3 +35,106 @@ CREATE COMPUTE MODULE MySoapFlow_Compute
 		RETURN TRUE;
 	END;
 END MODULE;
+===================================================================================================================================================================
+
+
+
+
+
+
+
+
+
+CREATE COMPUTE MODULE MySoapflow_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		CALL CopyEntireMessage();
+		RETURN TRUE;
+	END;
+
+
+
+	CREATE PROCEDURE CopyEntireMessage() BEGIN
+		/* /*DECLARE inref REFERENCE TO InputRoot.SOAP.Body.tran:Fr;
+		DECLARE outRef REFERENCE TO OutputRoot.SOAP.Body;
+		CREATE FIELD outRef.tran:Fr;
+		CREATE FIELD outRef.tran:Fr.tran:FIId;
+		CREATE FIELD outRef.tran:Fr.tran:FIId.tran:FinInstnId;
+		CREATE FIELD outRef.tran:Fr.tran:FIId.tran:FinInstnId.tran:ClrSysMmbId;
+		SET outRef.tran:Fr.tran:FIId.tran:FinInstnId.tran:ClrSysMmbId.tran:MmbId = 12345; */
+		/*CREATE LASTCHILD OF OutputRoot DOMAIN 'SOAP' NAME 'Envelope';
+		DECLARE envRef REFERENCE TO OutputRoot.soapenv:Envelope;
+		CREATE LASTCHILD OF envRef NAME 'Body';
+		DECLARE bodyRef REFERENCE TO envRef.soapenv:Body;
+		-- Create payload under XMLNSC (actual content must go here)
+		CREATE LASTCHILD OF bodyRef DOMAIN 'XMLNSC' NAME 'tran:Fr';
+		DECLARE frRef REFERENCE TO bodyRef."XMLNSC"."tran:Fr";
+		-- Continue building the tree
+		CREATE LASTCHILD OF frRef NAME 'tran:FIId';
+		CREATE LASTCHILD OF frRef.tran:FIId NAME 'tran:FinInstnId';
+		CREATE LASTCHILD OF frRef.tran:FIId.tran:FinInstnId NAME 'tran:ClrSysMmbId';
+		SET frRef.tran:FIId.tran:FinInstnId.tran:ClrSysMmbId.tran:MmbId = '12345';*/
+		/*DECLARE soapenv NAMESPACE 'http://schemas.xmlsoap.org/soap/envelope/';
+		DECLARE tran NAMESPACE 'http://tempuri.org/Admi';
+		SET OutputRoot.XMLNSC.soapenv:Envelope.(XMLNSC.NamespaceDecl)xmlns:soapenv = soapenv;
+		SET OutputRoot.XMLNSC.soapenv:Envelope.(XMLNSC.NamespaceDecl)xmlns:tran = tran;
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.tran:Fr.tran:FIId.tran:FinInstnId.tran:ClrSysMmbId.tran:MmbId = '12345';*/
+
+
+
+
+
+		DECLARE test1 CHARACTER;
+		DECLARE test2 CHARACTER;
+		DECLARE test3 CHARACTER;
+		DECLARE test4 CHARACTER;
+		DECLARE test5 CHARACTER;
+
+		set test1 =InputRoot.SOAP.Body.admi:RequestPayload.admi:Document.admi:SysEvtNtfctn.admi:EvtInf.admi:EvtCd;
+
+		set test2 =InputRoot.SOAP.Body.admi:RequestPayload.admi:AppHdr.admi:BizMsgIdr;
+
+
+
+		IF test1 is Null OR test3 is null THEN
+
+			SET OutputRoot.XMLNSC.soapenv:Envelope.(XMLNSC.NamespaceDecl)xmlns:soapenv = soapenv;
+			SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.soapenv:Fault.faultcode = '400';
+			SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.soapenv:Fault.faultstring = 'BizMsgIdr is missing';
+			RETURN;
+		END IF;
+
+
+
+		SET OutputRoot.XMLNSC.soapenv:Envelope.(XMLNSC.NamespaceDecl)xmlns:soapenv = soapenv;
+		SET OutputRoot.XMLNSC.soapenv:Envelope.(XMLNSC.NamespaceDecl)xmlns:admi = admi;
+
+
+		CREATE LASTCHILD OF OutputRoot.XMLNSC.soapenv:Envelope NAME 'soapenv:Header';
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.(XMLNSC.Attribute)xm = 'xcvb';
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:Fr.admi:FIId.admi:FinInstnId.admi:ClrSysMmbId.admi:MmbId = 'jhhbhbhj';
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:To.admi:FIId.admi:FinInstnId.admi:ClrSysMmbId.admi:MmbId = 'ghygbjhnj';
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:BizMsgIdr = 8765;
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:MsgDefIdr = 'pmjjkhbb';
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:BizSvc = 'Tgvbhgvb';
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:AppHdr.admi:CreDt = CURRENT_TIME;
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:Document.admi:SysEvtNtfctn.admi:EvtInf.admi:EvtCd = 'ubhdbbd';
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:Document.admi:SysEvtNtfctn.admi:EvtInf.admi:EvtParam = 'bhhbbbssbs';
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:Document.admi:SysEvtNtfctn.admi:EvtInf.admi:EvtDesc = 'bhujnjsnjsnjsnss';
+		SET OutputRoot.XMLNSC.soapenv:Envelope.soapenv:Body.admi:RequestPayload.admi:Document.admi:SysEvtNtfctn.admi:EvtInf.admi:EvtTm = CURRENT_TIMESTAMP;
+		*/
+		/*DECLARE inRef REFERENCE TO InputRoot;
+		DECLARE bodyRef REFERENCE TO InputRoot.SOAP.Body.BizMsgIdr;
+		CREATE LASTCHILD OF OutputRoot DOMAIN('XMLNSC') NAME 'RequestPayload';
+		DECLARE childRef REFERENCE TO bodyRef.*[1];
+		WHILE LASTMOVE(childRef) DO			
+		CREATE LASTCHILD OF OutputRoot.RequestPayload FROM childRef;
+		MOVE childRef NEXTSIBLING;
+		END WHILE;*/
+
+		SET  OutputRoot=InputRoot;
+
+
+	END;
+END MODULE;
+
