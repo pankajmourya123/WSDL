@@ -6,23 +6,14 @@ A namespace is a unique identifier (URI) that qualifies element names in XML to 
 
 Example:
 <ns1:example xmlns:ns1="http://example.com/ns">Hello</ns1:example>
-
-
-
----
+========================================================================================================================================================
 
 2. Declaring a Namespace in ESQL
 
 DECLARE ns1 NAMESPACE 'http://example.com/ns1';
 DECLARE ns2 NAMESPACE 'http://example.com/ns2';
 
-Use meaningful names like headerNS, documentNS instead of ns1/ns2 if preferred.
-
-URIs are usually taken from ISO 20022 standards or WSDL/XSDs.
-
-
-
----
+=========================================================================================================================================================
 
 3. Applying a Namespace to OutputRoot Fields
 
@@ -78,30 +69,11 @@ Use (XMLNSC.NamespaceDecl) to declare namespace properly, or CREATE FIELD carefu
 
 
 
----
-
-7. Common Mistakes
-
-Forgetting to declare xmlns, leading to serialization errors.
-
-Using a prefix (ns1:) without declaring the URI.
-
-Not setting the namespace on root before setting children — leads to write failures.
+===========================================================================================================
 
 
 
----
-
-8. Good Practice
-
-Use REFERENCE to avoid repeating long path chains.
-
-Keep consistent naming between declared prefixes and what you use in code.
-
-Use real URIs from schema/WSDL — don't make them up unless testing.
 
 
 
----
 
-Let me know if you want a PDF version or want me to include examples with SOAP envelopes or ISO messages!
