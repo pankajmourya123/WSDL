@@ -1,100 +1,32 @@
 CREATE COMPUTE MODULE SoapFlow_Compute
 	CREATE FUNCTION Main() RETURNS BOOLEAN
 	BEGIN
+        -- Declare namespaces
+        DECLARE ns1 NAMESPACE 'urn:iso:std:iso:20022:tech:xsd:Header';
+        DECLARE ns2 NAMESPACE 'urn:iso:std:iso:20022:tech:xsd:head.001.001.02';
+        DECLARE ns3 NAMESPACE 'urn:iso:std:iso:20022:tech:xsd:admi.004.001.02';
 
+        -- Set namespace declarations on AppHdr
+        SET OutputRoot.XMLNSC.RequestPayload.ns2:AppHdr.(XMLNSC.NamespaceDecl)xmlns:xsi = ns1;
+        SET OutputRoot.XMLNSC.RequestPayload.ns2:AppHdr.(XMLNSC.NamespaceDecl)xmlns = ns2;
 
-		 
-	 
+        -- Create and populate AppHdr section using namespace prefixes
+        SET OutputRoot.XMLNSC.RequestPayload.ns2:AppHdr.ns2:Fr.ns2:FIId.ns2:FinInstnId.ns2:ClrSysMmbId.ns2:MmbId = 'RBIP0NEFTSC';
+        SET OutputRoot.XMLNSC.RequestPayload.ns2:AppHdr.ns2:To.ns2:FIId.ns2:FinInstnId.ns2:ClrSysMmbId.ns2:MmbId = 'GSCB0000001';
+        SET OutputRoot.XMLNSC.RequestPayload.ns2:AppHdr.ns2:BizMsgIdr = 'GSCB202412105310110020';
+        SET OutputRoot.XMLNSC.RequestPayload.ns2:AppHdr.ns2:MsgDefIdr = 'admi.004.001.02';
+        SET OutputRoot.XMLNSC.RequestPayload.ns2:AppHdr.ns2:BizSvc = 'NEFT';
+        SET OutputRoot.XMLNSC.RequestPayload.ns2:AppHdr.ns2:CreDt = '2024-12-10T12:26:49Z';
 
-	--DECLARE apphdr REFERENCE TO OutputRoot.XMLNSC.RequestPayload.AppHdr;
-	
-  /*DECLARE space1 NAMESPACE 'namespace1';
-  SET OutputRoot.XMLNSC.space1:root.(XMLNSC.NamespaceDecl)xmlns:ns1 = space1;
-  SET OutputRoot.XMLNSC.space1:root.space1:example = 'ABCDE';*/
-  
-  /*<ns1:root xmlns:ns1="namespace1">
-    <ns1:example>ABCDE</ns1:example>
-</ns1:root>*/
+        -- Set namespace for Document section
+        SET OutputRoot.XMLNSC.RequestPayload.ns3:Document.(XMLNSC.NamespaceDecl)xmlns = ns3;
 
+        -- Populate Document section
+        SET OutputRoot.XMLNSC.RequestPayload.ns3:Document.ns3:SysEvtNtfctn.ns3:EvtInf.ns3:EvtCd = 'F27';
+        SET OutputRoot.XMLNSC.RequestPayload.ns3:Document.ns3:SysEvtNtfctn.ns3:EvtInf.ns3:EvtParam = 'PBAPI000000';
+        SET OutputRoot.XMLNSC.RequestPayload.ns3:Document.ns3:SysEvtNtfctn.ns3:EvtInf.ns3:EvtDesc = 'Message sent successfully.';
+        SET OutputRoot.XMLNSC.RequestPayload.ns3:Document.ns3:SysEvtNtfctn.ns3:EvtInf.ns3:EvtTm = '2024-12-10T12:26:49';
 
-/*DECLARE space1 NAMESPACE 'namespace1';
-SET OutputRoot.XMLNSC.space1:root.(XMLNSC.NamespaceDecl)xmlns = space1;
-SET OutputRoot.XMLNSC.space1:root.space1:example = 'ABCDE';*/
-
-/*<root xmlns="namespace1">
-    <example>ABCDE</example>
-</root>*/
-
-            DECLARE space1 NAMESPACE 'urn:iso:std:iso:20022:tech:xsd:Header';
-           DECLARE space2 NAMESPACE 'urn:iso:std:iso:20022:tech:xsd:head.001.001.02';
---CREATE FIELD OutputRoot.XMLNS.RequestPayload;
-          SET OutputRoot.XMLNSC.RequestPayload.AppHdr.(XMLNSC.NamespaceDecl)xmlns:xsi=space1;
-        SET OutputRoot.XMLNSC.RequestPayload.AppHdr.(XMLNSC.NamespaceDecl)xmlns=space2;
-         
-		
-		/*DECLARE space1 NAMESPACE 'namespace1';
-		SET OutputRoot.XMLNSC.space1:root.(XMLNSC.NamespaceDecl)xmlns:ns1 = space1;
-		SET OutputRoot.XMLNSC.space1:root.space1:example = 'ABCDE';*/
-
---		DECLARE space2 NAMESPACE 'urn:iso:std:iso:20022:tech:xsd:head.001.001.02';
---	    SET apphdr.(XMLNSC.Attribute)xmlns = 'urn:iso:std:iso:20022:tech:xsd:head.001.001.02';
-
-DECLARE apphdr REFERENCE TO OutputRoot.XMLNSC.RequestPayload;
-
-
-
-
-
-		SET apphdr.AppHdr.Fr.FIId.FinInstnId.ClrSysMmbId.MmbId = 'RBIP0NEFTSC';
-
-		SET apphdr.AppHdr.To.FIId.FinInstnId.ClrSysMmbId.MmbId = 'GSCB0000001';
-
-		SET  apphdr.AppHdr.BizMsgIdr = 'GSCB202412105310110020';
-
-		SET  apphdr.AppHdr.BizMsgIdr = 'GSCB202412105310110020';
-		
-		
-		
-		SET  apphdr.AppHdr.MsgDefIdr = 'admi.004.001.02';
-		SET apphdr.AppHdr.BizSvc ='NEFT';
-		SET  apphdr.AppHdr.CreDt = '2024-12-10T12:26:49Z';
-
-        
-
-		
-		
-		DECLARE space3 NAMESPACE 'urn:iso:std:iso:20022:tech:xsd:admi.004.001.02';
-		SET OutputRoot.XMLNSC.RequestPayload.Document.(XMLNSC.NamespaceDecl)xmlns = space3;
-		
-	DECLARE doc REFERENCE TO OutputRoot.XMLNSC.RequestPayload.Document;
-
-		SET  doc.SysEvtNtfctn.EvtInf.EvtCd = 'F27';
-
-		SET doc.SysEvtNtfctn.EvtInf.EvtParam = 'PBAPI000000';
-
-		SET  doc.SysEvtNtfctn.EvtInf.EvtDesc = 'Message sent successfully.';
-
-		SET   doc.SysEvtNtfctn.EvtInf.EvtTm = '2024-12-10T12:26:49';
-	
 		RETURN TRUE;
-	END;	
-
-
-
-
+	END;
 END MODULE;
-<?xml version="1.0" encoding="UTF-8"?>
-<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-    <SOAP-ENV:Body>
-        <SOAP-ENV:Fault>
-            <faultcode>SOAP-ENV:Server</faultcode>
-            <faultstring>BIP3113E: Exception detected in message flow SoapFlow (integration node integration_server) </faultstring>
-            <faultactor>http://localhost:7800/test</faultactor>
-            <detail>
-                <text>Exception. BIP2230E: Error detected whilst processing a message in node &apos;SoapFlow.HTTP Reply&apos;. : C:\ci\product-build\WMB\src\WebServices\WSLibrary\ImbWSReplyNode.cpp: 975: ImbWSReplyNode::evaluate: ComIbmWSReplyNode: SoapFlow#FCMComposite_1_2
-BIP5010E: XML Writing Errors have occurred. : C:\ci\product-build\WMB\src\MTI\MTIforBroker\GenXmlParser4\ImbXMLNSCParser.cpp: 957: ImbXMLNSCParser::refreshBitStreamFromElementsCommon: ComIbmWSInputNode: SoapFlow#FCMComposite_1_1
-BIP5014E: Element must have a namespace specified if there is a default namespace in scope. : C:\ci\product-build\WMB\src\MTI\MTIforBroker\GenXmlParser4\ImbXMLNSCWriter.cpp: 698: ImbXMLNSCWriter::writeElement: : </text>
-            </detail>
-        </SOAP-ENV:Fault>
-    </SOAP-ENV:Body>
-</SOAP-ENV:Envelope>
