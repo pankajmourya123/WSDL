@@ -1,0 +1,27 @@
+CREATE COMPUTE MODULE SoapFlow_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+ DECLARE ns1 NAMESPACE 'urn:iso:std:iso:20022:tech:xsd:Header';
+        DECLARE ns2 NAMESPACE 'urn:iso:std:iso:20022:tech:xsd:head.001.001.02';
+         DECLARE ns3 NAMESPACE 'urn:iso:std:iso:20022:tech:xsd:admi.004.001.02';   
+      SET OutputRoot.XMLNSC.RequestPayload.ns2:AppHdr.(XMLNSC.NamespaceDecl)xmlns:xsi = ns1;
+        SET OutputRoot.XMLNSC.RequestPayload.ns2:AppHdr.(XMLNSC.NamespaceDecl)xmlns = ns2;
+SET OutputRoot.XMLNSC.RequestPayload.ns2:AppHdr.ns2:Fr.ns2:FIId.ns2:FinInstnId.ns2:ClrSysMmbId.ns2:MmbId = 'RBIP0NEFTSC';
+        SET OutputRoot.XMLNSC.RequestPayload.ns2:AppHdr.ns2:To.ns2:FIId.ns2:FinInstnId.ns2:ClrSysMmbId.ns2:MmbId = 'GSCB0000001';
+            
+            SET OutputRoot.XMLNSC.RequestPayload.ns2:AppHdr.ns2:BizMsgIdr = 'GSCB202412105310110020';
+        SET OutputRoot.XMLNSC.RequestPayload.ns2:AppHdr.ns2:MsgDefIdr = 'admi.004.001.02';
+       
+        SET OutputRoot.XMLNSC.RequestPayload.ns2:AppHdr.ns2:BizSvc = 'NEFT';
+   SET OutputRoot.XMLNSC.RequestPayload.ns2:AppHdr.ns2:CreDt = '2024-12-10T12:26:49Z';
+        
+        SET OutputRoot.XMLNSC.RequestPayload.ns3:Document.(XMLNSC.NamespaceDecl)xmlns = ns3;
+  SET OutputRoot.XMLNSC.RequestPayload.ns3:Document.ns3:SysEvtNtfctn.ns3:EvtInf.ns3:EvtCd = 'F27';
+        SET OutputRoot.XMLNSC.RequestPayload.ns3:Document.ns3:SysEvtNtfctn.ns3:EvtInf.ns3:EvtParam = 'PBAPI000000';
+    SET OutputRoot.XMLNSC.RequestPayload.ns3:Document.ns3:SysEvtNtfctn.ns3:EvtInf.ns3:EvtDesc = 'Message sent successfully.';
+        SET OutputRoot.XMLNSC.RequestPayload.ns3:Document.ns3:SysEvtNtfctn.ns3:EvtInf.ns3:EvtTm = '2024-12-10T12:26:49';
+	
+		RETURN TRUE;
+	END;	
+
+END MODULE;
