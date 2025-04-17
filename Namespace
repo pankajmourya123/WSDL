@@ -1,0 +1,107 @@
+
+
+1. What is a Namespace?
+
+A namespace is a unique identifier (URI) that qualifies element names in XML to avoid conflicts.
+
+Example:
+<ns1:example xmlns:ns1="http://example.com/ns">Hello</ns1:example>
+
+
+
+---
+
+2. Declaring a Namespace in ESQL
+
+DECLARE ns1 NAMESPACE 'http://example.com/ns1';
+DECLARE ns2 NAMESPACE 'http://example.com/ns2';
+
+Use meaningful names like headerNS, documentNS instead of ns1/ns2 if preferred.
+
+URIs are usually taken from ISO 20022 standards or WSDL/XSDs.
+
+
+
+---
+
+3. Applying a Namespace to OutputRoot Fields
+
+a. Prefixed Namespace Declaration
+
+SET OutputRoot.XMLNSC.ns1:root.(XMLNSC.NamespaceDecl)xmlns:ns1 = ns1;
+SET OutputRoot.XMLNSC.ns1:root.ns1:example = 'Data';
+
+Output:
+
+<ns1:root xmlns:ns1="http://example.com/ns1">
+    <ns1:example>Data</ns1:example>
+</ns1:root>
+
+b. Default Namespace Declaration
+
+SET OutputRoot.XMLNSC.root.(XMLNSC.NamespaceDecl)xmlns = ns1;
+SET OutputRoot.XMLNSC.root.example = 'Data';
+
+Output:
+
+<root xmlns="http://example.com/ns1">
+    <example>Data</example>
+</root>
+
+
+---
+
+4. Multiple Namespace Declarations in One Element
+
+SET OutputRoot.XMLNSC.RequestPayload.AppHdr.(XMLNSC.NamespaceDecl)xmlns:xsi = 'http://www.w3.org/2001/XMLSchema-instance';
+SET OutputRoot.XMLNSC.RequestPayload.AppHdr.(XMLNSC.NamespaceDecl)xmlns = 'urn:iso:std:iso:20022:tech:xsd:head.001.001.02';
+
+
+---
+
+5. Creating Children with Specific Namespaces
+
+If default namespace is set, child elements will automatically inherit it. Otherwise, qualify manually:
+
+SET OutputRoot.XMLNSC.ns2:root.ns2:child = 'Hello';
+
+
+---
+
+6. Avoiding Namespace Errors
+
+BIP5014E means you tried writing an element without a namespace when a default was in scope.
+
+Always set the namespace before creating children.
+
+Use (XMLNSC.NamespaceDecl) to declare namespace properly, or CREATE FIELD carefully with namespace binding.
+
+
+
+---
+
+7. Common Mistakes
+
+Forgetting to declare xmlns, leading to serialization errors.
+
+Using a prefix (ns1:) without declaring the URI.
+
+Not setting the namespace on root before setting children — leads to write failures.
+
+
+
+---
+
+8. Good Practice
+
+Use REFERENCE to avoid repeating long path chains.
+
+Keep consistent naming between declared prefixes and what you use in code.
+
+Use real URIs from schema/WSDL — don't make them up unless testing.
+
+
+
+---
+
+Let me know if you want a PDF version or want me to include examples with SOAP envelopes or ISO messages!
