@@ -1,27 +1,10 @@
-C:\Program Files\IBM\ACE\12.0.8.0>keytool -import -trustcacerts -alias appb1 -file C:\Users\pankaj.m\IBM\ACET12\ACCAGC\reqres.in.crt  -keystore C:\Users\pankaj.m\IBM\ACET12\ACCAGC\TustStore.jks -storetype jks m  storepass pankaj@03
-Illegal option:  m
-keytool -importcert [OPTION]...
-
-Imports a certificate or a certificate chain
-
-Options:
-
- -noprompt                       do not prompt
- -trustcacerts                   trust certificates from cacerts
- -protected                      password through protected mechanism
- -alias <alias>                  alias name of the entry to process
- -file <filename>                input file name
- -keypass <arg>                  key password
- -keystore <keystore>            keystore name
- -storepass <arg>                keystore password
- -storetype <storetype>          keystore type
- -providername <providername>    provider name
- -providerclass <providerclass>  provider class name
- -providerarg <arg>              provider argument
- -providerpath <pathlist>        provider classpath
- -v                              verbose output
-
 Use "keytool -help" for all available commands
+
+C:\Program Files\IBM\ACE\12.0.8.0>keytool -import -trustcacerts -alias appb1 -file C:\Users\pankaj.m\IBM\ACET12\ACCAGC\reqres.in.crt  -keystore C:\Users\pankaj.m\IBM\ACET12\ACCAGC\TustStore.jks -storetype jks -storepass pankaj@03
+keytool error: java.lang.Exception: Public keys in reply and keystore don't match
+
+
+
 
 keytool -importcert -file reqres_cert.pem -keystore truststore.jks -alias reqres -storepass changeit
 mqsichangeproperties YOUR_NODE_NAME -o BrokerRegistry -n brokerKeystoreFile,brokerKeystoreType,brokerKeystorePass -v /path/to/truststore.jks,JKS,changeit
