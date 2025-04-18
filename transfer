@@ -1,3 +1,30 @@
+C:\Program Files\IBM\ACE\12.0.8.0>  keytool -genkey -alias appb1 -keyalg RSA -keystore C:\Users\pankaj.m\IBM\ACET12\ACCAGC\TustStore.jks -keysize 204
+Enter keystore password:
+
+Re-enter new password:
+
+What is your first and last name?
+  [Unknown]:  pankaj mourya
+What is the name of your organizational unit?
+  [Unknown]:  cedge
+What is the name of your organization?
+  [Unknown]:  cedge
+What is the name of your City or Locality?
+  [Unknown]:  thane
+What is the name of your State or Province?
+  [Unknown]:  maharashtra
+What is the two-letter country code for this unit?
+  [Unknown]:  in
+Is CN=pankaj mourya, OU=cedge, O=cedge, L=thane, ST=maharashtra, C=in correct? (type "yes" or "no")
+  [no]:  yes
+
+keytool error (likely untranslated): java.lang.IllegalArgumentException: Modulus size must be multiple of 8
+
+
+
+
+
+
 
 
 
