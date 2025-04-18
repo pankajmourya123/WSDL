@@ -1,3 +1,6 @@
+
+
+
 keytool -importcert -file reqres_cert.pem -keystore truststore.jks -alias reqres -storepass changeit
 mqsichangeproperties YOUR_NODE_NAME -o BrokerRegistry -n brokerKeystoreFile,brokerKeystoreType,brokerKeystorePass -v /path/to/truststore.jks,JKS,changeit
 mqsisetdbparms YOUR_NODE_NAME -n ssl::MySSLProfile -k /path/to/truststore.jks -p changeit
@@ -9,3 +12,50 @@ SslProfiles:
     certificateStorePassword: "changeit"
 mqsistop YOUR_NODE_NAME
 mqsistart YOUR_NODE_NAME
+
+
+-------------------------------------------------To list the certificates--------------------------------------------------
+keytool -list -v -keystore /var/mqsi/AccountAggregator_SSL/KeyStore.jks -storetype jks -storepass ACCAGG
+
+---------------------------------------------------------------------------------------------------------------------------
+mqsireportproperties IIBDRBRKR -o BrokerRegistry -r
+
+mqsichangeproperties IIBONEMONEY -o BrokerRegistry -n brokerKeystoreFile -v /var/mqsi/AccountAggregator_SSL/KeyStore.jks
+mqsichangeproperties IIBONEMONEY -o BrokerRegistry -n brokerTruststoreFile -v /var/mqsi/AccountAggregator_SSL/Truststore.jks
+ 
+mqsisetdbparms IIBDRBRKR -n brokerKeystore::password -u ignore -p ACCAGG
+mqsisetdbparms IIBDRBRKR -n brokerTruststore::password -u ignore -p ACCAGG
+
+keytool -list -v -keystore /var/iib/interface/hdfc/neft/inward/signature/hdfcapitruststorepublic.jks -storetype jks -storepass hdfc123
+
+mqsichangeproperties IIBUATBRKR -b httplistener -o HTTPListener -n enableSSLConnector -v true 
+
+mqsichangeproperties IIBDRBRKR -b httplistener -o HTTPListener -n TLSProtocols -v TLSv1.2
+
+mqsireportproperties IIBDRBRKR -e ACCAGG -o HTTPConnector -r
+
+mqsireportproperties IIBDRBRKR -b httplistener -o HTTPSConnector -r
+
+mqsichangeproperties IIBDRBRKR -b httplistener -o HTTPSConnector -n clientAuth -v true
+
+mqsichangeproperties IIBDRBRKR -b httplistener -o HTTPSConnector -n sslProtocol -v TLSv1.2
+ 
+
+
+mqsichangeproperties IIBDRBRKR -o BrokerRegistry -n TLSProtocols -v TLSv1.2
+mqsireportproperties IIBUATONEMONEY -o BrokerRegistry -a 
+mqsireportproperties IIBDRBRKR -b httplistener -o HTTPListener -a
+ 
+mqsichangeproperties IIBUATBRKR -e ACCAGG -o HTTPSConnector -n ReqClientAuth -v true
+mqsichangeproperties IIBUATBRKR -e ACCAGG -o HTTPSConnector -n explicitlySetPortNumber -v 8080
+mqsichangeproperties IIBUATBRKR -e ACCAGG -o HTTPSConnector -n TLSProtocols -v TLSv1.2
+
+
+
+
+
+
+ikeycmd -cert -create -db /var/mqsi/AccountAggregator_SSL/Keystore.jks -pw ACCAGG -type jks -label comibmssl
+ -------------------------detele certificate from jks------------------------------------
+ 
+ keytool -delete -alias accagg_myvfirst -keystore /var/mqsi/AccountAggregator_SSL/KeyStore.jks -storepass ACCAGG
