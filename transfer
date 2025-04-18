@@ -1,48 +1,27 @@
-C:\Program Files\IBM\ACE\12.0.8.0> keytool -import -trustcacerts -alias reqres.in -file C:\Users\pankaj.m\IBM\ACET12\reqres.in.crt -keystore C:\Users\pankaj.m\IBM\ACET12\ACCAGC\KeyStore.jks -storetype jks -storepass pankaj@03
-Owner: CN=reqres.in
-Issuer: OID.2.5.29.17=ContentKeeper Appliance CA (52240727491), CN=ContentKeeper Appliance CA (52240727491), OU=ContentKeeper Web, O=ContentKeeper Technologies, L=Canberra, ST=ACT, C=AU
-Serial number: 943a6a3d09d752909703f74a59911dd61a28a09
-Valid from: 2/4/25 5:32 AM until: 1/7/25 6:32 AM
-Certificate fingerprints:
-         MD5:  4F:55:11:95:DE:0C:36:06:CC:D6:C8:10:4F:EE:92:A2
-         SHA1: B7:93:4E:7E:08:61:FA:E7:1A:3A:55:52:5C:91:47:FC:EA:F7:13:30
-         SHA256: 20:73:C3:A8:13:9A:34:C6:4E:D4:B9:E1:22:B6:0B:79:8F:76:9A:19:02:12:33:70:20:53:16:F1:21:A7:45:69
-         Signature algorithm name: SHA256withRSA
-         Version: 3
+C:\Program Files\IBM\ACE\12.0.8.0>keytool -import -trustcacerts -alias appb1 -file C:\Users\pankaj.m\IBM\ACET12\ACCAGC\reqres.in.crt  -keystore C:\Users\pankaj.m\IBM\ACET12\ACCAGC\TustStore.jks -storetype jks m  storepass pankaj@03
+Illegal option:  m
+keytool -importcert [OPTION]...
 
-Extensions:
+Imports a certificate or a certificate chain
 
-#1: ObjectId: 2.5.29.15 Criticality=true
-KeyUsage [
-  DigitalSignature
-  Key_Encipherment
-]
+Options:
 
-#2: ObjectId: 2.5.29.35 Criticality=false
-AuthorityKeyIdentifier [
-KeyIdentifier [
-0000: 20 07 d2 7b ac 47 27 db  b5 6a c3 19 b2 67 26 a7  .....G...j...g..
-0010: aa 2f 7f 0b                                        ....
-]
-]
+ -noprompt                       do not prompt
+ -trustcacerts                   trust certificates from cacerts
+ -protected                      password through protected mechanism
+ -alias <alias>                  alias name of the entry to process
+ -file <filename>                input file name
+ -keypass <arg>                  key password
+ -keystore <keystore>            keystore name
+ -storepass <arg>                keystore password
+ -storetype <storetype>          keystore type
+ -providername <providername>    provider name
+ -providerclass <providerclass>  provider class name
+ -providerarg <arg>              provider argument
+ -providerpath <pathlist>        provider classpath
+ -v                              verbose output
 
-#3: ObjectId: 2.5.29.37 Criticality=false
-ExtKeyUsage [
-        1.3.6.1.5.5.7.3.1]
-
-#4: ObjectId: 2.5.29.19 Criticality=true
-BasicConstraints:[
-CA:false
-PathLen: undefined
-]
-
-#5: ObjectId: 2.5.29.17 Criticality=false
-SubjectAlternativeName [
-[DNSName: reqres.in, DNSName: *.reqres.in]]
-
-Trust this certificate? [no]:  yes
-Certificate was added to keystore 
-C:\Program Files\IBM\ACE\12.0.8.0>
+Use "keytool -help" for all available commands
 
 keytool -importcert -file reqres_cert.pem -keystore truststore.jks -alias reqres -storepass changeit
 mqsichangeproperties YOUR_NODE_NAME -o BrokerRegistry -n brokerKeystoreFile,brokerKeystoreType,brokerKeystorePass -v /path/to/truststore.jks,JKS,changeit
