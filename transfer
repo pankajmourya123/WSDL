@@ -1,31 +1,11 @@
-C:\Program Files\IBM\ACE\12.0.8.0>  keytool -genkey -alias appb1 -keyalg RSA -keystore C:\Users\pankaj.m\IBM\ACET12\ACCAGC\TustStore.jks -keysize 204
-Enter keystore password:
+C:\Program Files\IBM\ACE\12.0.8.0>  keytool -import -trustcacerts -alias reqres.in -file C:\Users\pankaj.m\IBM\ACET12\ACCAGC\reqres.in -keystore C:\Users\pankaj.m\IBM\ACET12\ACCAGC\KeyStore.jks -storetype jks -storepass pankaj@03
+keytool error (likely untranslated): java.io.FileNotFoundException: C:\Users\pankaj.m\IBM\ACET12\ACCAGC\reqres.in (The system cannot find the file specified.)
 
-Re-enter new password:
+C:\Program Files\IBM\ACE\12.0.8.0>keytool -import -trustcacerts -alias reqres.in -file C:\Users\pankaj.m\IBM\ACET12\ACCAGC\reqres.in -keystore C:\Users\pankaj.m\IBM\ACET12\ACCAGC\KeyStore.jks -storetype jks -storepass pankaj@03
+keytool error (likely untranslated): java.io.FileNotFoundException: C:\Users\pankaj.m\IBM\ACET12\ACCAGC\reqres.in (The system cannot find the file specified.)
 
-What is your first and last name?
-  [Unknown]:  pankaj mourya
-What is the name of your organizational unit?
-  [Unknown]:  cedge
-What is the name of your organization?
-  [Unknown]:  cedge
-What is the name of your City or Locality?
-  [Unknown]:  thane
-What is the name of your State or Province?
-  [Unknown]:  maharashtra
-What is the two-letter country code for this unit?
-  [Unknown]:  in
-Is CN=pankaj mourya, OU=cedge, O=cedge, L=thane, ST=maharashtra, C=in correct? (type "yes" or "no")
-  [no]:  yes
-
-keytool error (likely untranslated): java.lang.IllegalArgumentException: Modulus size must be multiple of 8
-
-
-
-
-
-
-
+C:\Program Files\IBM\ACE\12.0.8.0> keytool -import -trustcacerts -alias reqres.in -file C:\Users\pankaj.m\IBM\ACET12\reqres.in -keystore C:\Users\pankaj.m\IBM\ACET12\ACCAGC\KeyStore.jks -storetype jks -storepass pankaj@03
+keytool error (likely untranslated): java.io.FileNotFoundException: C:\Users\pankaj.m\IBM\ACET12\reqres.in (The system cannot find the file specified.)
 
 
 keytool -importcert -file reqres_cert.pem -keystore truststore.jks -alias reqres -storepass changeit
