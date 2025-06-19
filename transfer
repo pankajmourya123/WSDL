@@ -1,35 +1,174 @@
+ExceptionList
+	RecoverableException
+			File:CHARACTER:C:\ci\product-build\WMB\src\DataFlowEngine\MessageServices\ImbDataFlowNode.cpp
+			Line:INTEGER:1607
+			Function:CHARACTER:ImbDataFlowNode::createExceptionList
+			Type:CHARACTER:ComIbmTCPIPServerInputNode
+			Name:CHARACTER:TCPIPServer#FCMComposite_1_1
+			Label:CHARACTER:TCPIPServer.TCPIP Server Input
+			Catalog:CHARACTER:BIPmsgs
+			Severity:INTEGER:3
+			Number:INTEGER:2230
+			Text:CHARACTER:Node throwing exception
+			Insert
+					Type:INTEGER:14
+					Text:CHARACTER:TCPIPServer.TCPIP Server Input
+			RecoverableException
+					File:CHARACTER:C:\ci\product-build\WMB\src\DataFlowEngine\SQLNodeLibrary\ImbComputeNode.cpp
+					Line:INTEGER:343
+					Function:CHARACTER:ImbComputeNode::evaluate
+					Type:CHARACTER:ComIbmComputeNode
+					Name:CHARACTER:TCPIPServer#FCMComposite_1_3
+					Label:CHARACTER:TCPIPServer.Compute
+					Catalog:CHARACTER:BIPmsgs
+					Severity:INTEGER:3
+					Number:INTEGER:2230
+					Text:CHARACTER:Caught exception and rethrowing
+					Insert
+							Type:INTEGER:14
+							Text:CHARACTER:TCPIPServer.Compute
+					RecoverableException
+							File:CHARACTER:C:\ci\product-build\WMB\src\DataFlowEngine\ImbRdl\ImbRdlStatementGroup.cpp
+							Line:INTEGER:785
+							Function:CHARACTER:SqlStatementGroup::execute
+							Type:CHARACTER:
+							Name:CHARACTER:
+							Label:CHARACTER:
+							Catalog:CHARACTER:BIPmsgs
+							Severity:INTEGER:3
+							Number:INTEGER:2488
+							Text:CHARACTER:Error detected, rethrowing
+							Insert
+									Type:INTEGER:5
+									Text:CHARACTER:.TCPIPServer_Compute.Main
+							Insert
+									Type:INTEGER:5
+									Text:CHARACTER:3.3
+							Insert
+									Type:INTEGER:5
+									Text:CHARACTER:CALL CopyEntireMessage();
+							RecoverableException
+									File:CHARACTER:C:\ci\product-build\WMB\src\DataFlowEngine\ImbRdl\ImbRdlRoutine.cpp
+									Line:INTEGER:1337
+									Function:CHARACTER:SqlRoutine::invoke
+									Type:CHARACTER:
+									Name:CHARACTER:
+									Label:CHARACTER:
+									Catalog:CHARACTER:BIPmsgs
+									Severity:INTEGER:3
+									Number:INTEGER:2934
+									Text:CHARACTER:Error occured in procedure
+									Insert
+											Type:INTEGER:5
+											Text:CHARACTER:CopyEntireMessage
+									RecoverableException
+											File:CHARACTER:C:\ci\product-build\WMB\src\DataFlowEngine\ImbRdl\ImbRdlStatementGroup.cpp
+											Line:INTEGER:785
+											Function:CHARACTER:SqlStatementGroup::execute
+											Type:CHARACTER:
+											Name:CHARACTER:
+											Label:CHARACTER:
+											Catalog:CHARACTER:BIPmsgs
+											Severity:INTEGER:3
+											Number:INTEGER:2488
+											Text:CHARACTER:Error detected, rethrowing
+											Insert
+													Type:INTEGER:5
+													Text:CHARACTER:.TCPIPServer_Compute.CopyEntireMessage
+											Insert
+													Type:INTEGER:5
+													Text:CHARACTER:29.7
+											Insert
+													Type:INTEGER:5
+													Text:CHARACTER:SET OutputRoot.BLOB.BLOB = CAST(outputStr AS BLOB);
+											RecoverableException
+													File:CHARACTER:C:\ci\product-build\WMB\src\DataFlowEngine\ImbRdl\ImbRdlTypeCast.cpp
+													Line:INTEGER:339
+													Function:CHARACTER:SqlTypeCast::evaluate
+													Type:CHARACTER:
+													Name:CHARACTER:
+													Label:CHARACTER:
+													Catalog:CHARACTER:BIPmsgs
+													Severity:INTEGER:3
+													Number:INTEGER:2521
+													Text:CHARACTER:Error casting from %3 to %4
+													Insert
+															Type:INTEGER:5
+															Text:CHARACTER:.TCPIPServer_Compute.CopyEntireMessage
+													Insert
+															Type:INTEGER:5
+															Text:CHARACTER:29.32
+													Insert
+															Type:INTEGER:5
+															Text:CHARACTER:'CMS1111111111111111111KKBK0000958Y'
+													Insert
+															Type:INTEGER:5
+															Text:CHARACTER:BLOB
+													RecoverableException
+															File:CHARACTER:C:\ci\product-build\WMB\src\CommonServices\ImbValue.cpp
+															Line:INTEGER:867
+															Function:CHARACTER:ImbValue::fromCharacter
+															Type:CHARACTER:
+															Name:CHARACTER:
+															Label:CHARACTER:
+															Catalog:CHARACTER:BIPmsgs
+															Severity:INTEGER:3
+															Number:INTEGER:2590
+															Text:CHARACTER:String is not of correct form for byte array. Must consist of only 0..9,a..f,A..Z
+															Insert
+																	Type:INTEGER:5
+																	Text:CHARACTER:CMS1111111111111111111KKBK0000958Y
+
+
+
+
+
+
 CREATE COMPUTE MODULE TCPIPServer_Compute
-    CREATE FUNCTION Main() RETURNS BOOLEAN
-    BEGIN
-        CALL CopyEntireMessage();
-        RETURN TRUE;
-    END;
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		CALL CopyEntireMessage();
+		RETURN TRUE;
+	END;
 
-    CREATE PROCEDURE CopyMessageHeaders() BEGIN
-        DECLARE I INTEGER 1;
-        DECLARE J INTEGER;
-        SET J = CARDINALITY(InputRoot.*[]);
-        WHILE I < J DO
-            SET OutputRoot.*[I] = InputRoot.*[I];
-            SET I = I + 1;
-        END WHILE;
-    END;
+	CREATE PROCEDURE CopyMessageHeaders() BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.*[]);
+		WHILE I < J DO
+			SET OutputRoot.*[I] = InputRoot.*[I];
+			SET I = I + 1;
+		END WHILE;
+	END;
 
-    CREATE PROCEDURE CopyEntireMessage() BEGIN
-        DECLARE UTR CHARACTER;
-        DECLARE RECIVER_IFSC CHARACTER;
-        DECLARE FLAG CHARACTER;
+	CREATE PROCEDURE CopyEntireMessage() BEGIN
+		--SET OutputRoot = InputRoot;
+		--SET OutputRoot.JSON.Data.text='HELLO pakyaa kxcvbnkjhgcvbjkhbgv 123456789123456789123456789sdfgyhjkkkkdfgsdfghjkdfghjkdfghjkdfghjf22 timepass\n';
+		--SET OutputRoot.BLOB.BLOB.Text = 'Hello World';
 
-        SET UTR = InputRoot.DFDL.Serverdfdl.body.Trans_ref_no;
-        SET RECIVER_IFSC = InputRoot.DFDL.Serverdfdl.body.IFSC;
-        SET FLAG = InputRoot.DFDL.Serverdfdl.body.Flag;
+		DECLARE UTR CHARACTER;
+		DECLARE RECIVER_IFSC CHARACTER;
+		DECLARE FLAG CHARACTER;
+		DECLARE outputStr CHARACTER;
 
-        -- Setting values in JSON for output testing
-        SET OutputRoot.JSON.Data.UTR = UTR;
-        SET OutputRoot.JSON.Data.RECIVER_IFSC = RECIVER_IFSC;
-        SET OutputRoot.JSON.Data.FLAG = FLAG;
-    END;
+		SET UTR =InputRoot.DFDL.TRANSACTIONRECORD.UTR;
+		SET RECIVER_IFSC =InputRoot.DFDL.TRANSACTIONRECORD.RECEIVER_IFSC;
+		SET FLAG='Y';		
+		/*SET OutputRoot.DFDL.Serverdfdl.body.Trans_ref_no =UTR;
+		SET OutputRoot.DFDL.Serverdfdl.body.IFSC=RECIVER_IFSC;
+		SET OutputRoot.DFDL.Serverdfdl.body.Flag=FLAG;*/        
+        
+	
+	
+		/*IF UTR<>0 THEN
+		RETURN TRUE;
+		ELSE
+		END IF;*/
+
+		SET outputStr = UTR || RECIVER_IFSC || FLAG;
+		--SET OutputRoot.JSON.Data.text = outputStr ;
+       
+    --   SET OutputRoot.BLOB.BLOB=outputStr;
+      SET OutputRoot.BLOB.BLOB=CAST(outputStr as blob);
+	END;
 END MODULE;
-DECLARE outputStr CHARACTER;
-SET outputStr = UTR || RECIVER_IFSC || FLAG;
-SET OutputRoot.BLOB.BLOB = CAST(outputStr AS BLOB CCSID 1208);
