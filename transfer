@@ -1,67 +1,35 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
--<Serverdfdl xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema">
-
-
--<body>
-
-<Trans_ref_no xsi:type="xs:string">TGMBH21001010055656565</Trans_ref_no>
-
-<IFSC xsi:type="xs:string">TGMBH211234</IFSC>
-
-<Flag xsi:type="xs:string">y</Flag>
-
-</body>
-
-</Serverdfdl>
-
-
-
-
 CREATE COMPUTE MODULE TCPIPServer_Compute
-	CREATE FUNCTION Main() RETURNS BOOLEAN
-	BEGIN
-		 CALL CopyEntireMessage();
-		RETURN TRUE;
-	END;
+    CREATE FUNCTION Main() RETURNS BOOLEAN
+    BEGIN
+        CALL CopyEntireMessage();
+        RETURN TRUE;
+    END;
 
-	CREATE PROCEDURE CopyMessageHeaders() BEGIN
-		DECLARE I INTEGER 1;
-		DECLARE J INTEGER;
-		SET J = CARDINALITY(InputRoot.*[]);
-		WHILE I < J DO
-			SET OutputRoot.*[I] = InputRoot.*[I];
-			SET I = I + 1;
-		END WHILE;
-	END;
+    CREATE PROCEDURE CopyMessageHeaders() BEGIN
+        DECLARE I INTEGER 1;
+        DECLARE J INTEGER;
+        SET J = CARDINALITY(InputRoot.*[]);
+        WHILE I < J DO
+            SET OutputRoot.*[I] = InputRoot.*[I];
+            SET I = I + 1;
+        END WHILE;
+    END;
 
-	CREATE PROCEDURE CopyEntireMessage() BEGIN
-	    --SET OutputRoot = InputRoot;
-		--SET OutputRoot.JSON.Data.text='HELLO pakyaa kxcvbnkjhgcvbjkhbgv 123456789123456789123456789sdfgyhjkkkkdfgsdfghjkdfghjkdfghjkdfghjf22 timepass\n';
-		--SET OutputRoot.BLOB.BLOB.Text = 'Hello World';
-		
-		DECLARE UTR CHARACTER;
-		DECLARE RECIVER_IFSC CHARACTER;
-		DECLARE FLAG CHARACTER;
-		
-		SET   UTR =InputRoot.DFDL.TRANSACTIONRECORD.UTR;
-		SET   RECIVER_IFSC =InputRoot.DFDL.TRANSACTIONRECORD.RECEIVER_IFSC;
-		SET   FLAG='Y';
-		
-		set OutputRoot.BLOB.BLOB.UTR=UTR;
-		set OutputRoot.BLOB.BLOB.RECIVER_IFSC=RECIVER_IFSC;
-		set OutputRoot.BLOB.BLOB.FLAG=FLAG;
-		
-	SET OutputRoot.JSON.Data.text=UTR;
-		 /*IF UTR<>0 THEN
-           
-            RETURN TRUE;
-        ELSE
-             
-         END IF;*/
-           
-		
-	END;
+    CREATE PROCEDURE CopyEntireMessage() BEGIN
+        DECLARE UTR CHARACTER;
+        DECLARE RECIVER_IFSC CHARACTER;
+        DECLARE FLAG CHARACTER;
+
+        SET UTR = InputRoot.DFDL.Serverdfdl.body.Trans_ref_no;
+        SET RECIVER_IFSC = InputRoot.DFDL.Serverdfdl.body.IFSC;
+        SET FLAG = InputRoot.DFDL.Serverdfdl.body.Flag;
+
+        -- Setting values in JSON for output testing
+        SET OutputRoot.JSON.Data.UTR = UTR;
+        SET OutputRoot.JSON.Data.RECIVER_IFSC = RECIVER_IFSC;
+        SET OutputRoot.JSON.Data.FLAG = FLAG;
+    END;
 END MODULE;
-
-
+DECLARE outputStr CHARACTER;
+SET outputStr = UTR || RECIVER_IFSC || FLAG;
+SET OutputRoot.BLOB.BLOB = CAST(outputStr AS BLOB CCSID 1208);
