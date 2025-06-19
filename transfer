@@ -3,121 +3,68 @@ ExceptionList
 			File:CHARACTER:C:\ci\product-build\WMB\src\DataFlowEngine\MessageServices\ImbDataFlowNode.cpp
 			Line:INTEGER:1607
 			Function:CHARACTER:ImbDataFlowNode::createExceptionList
-			Type:CHARACTER:ComIbmTCPIPServerInputNode
-			Name:CHARACTER:TCPIPServer#FCMComposite_1_1
-			Label:CHARACTER:TCPIPServer.TCPIP Server Input
+			Type:CHARACTER:ComIbmWSInputNode
+			Name:CHARACTER:TCPIP_Clinet#FCMComposite_1_9
+			Label:CHARACTER:TCPIP_Clinet.HTTP Input
 			Catalog:CHARACTER:BIPmsgs
 			Severity:INTEGER:3
 			Number:INTEGER:2230
 			Text:CHARACTER:Node throwing exception
 			Insert
 					Type:INTEGER:14
-					Text:CHARACTER:TCPIPServer.TCPIP Server Input
+					Text:CHARACTER:TCPIP_Clinet.HTTP Input
 			RecoverableException
-					File:CHARACTER:C:\ci\product-build\WMB\src\DataFlowEngine\SQLNodeLibrary\ImbComputeNode.cpp
-					Line:INTEGER:343
-					Function:CHARACTER:ImbComputeNode::evaluate
-					Type:CHARACTER:ComIbmComputeNode
-					Name:CHARACTER:TCPIPServer#FCMComposite_1_3
-					Label:CHARACTER:TCPIPServer.Compute
+					File:CHARACTER:C:\ci\product-build\WMB\src\DataFlowEngine\TemplateNodes\ImbRequestTemplateNode.cpp
+					Line:INTEGER:1172
+					Function:CHARACTER:ImbRequestTemplateNode::processMessageAssemblyToFailure
+					Type:CHARACTER:ComIbmRequestTemplateNode
+					Name:CHARACTER:TCPIP_Clinet#FCMComposite_1_5
+					Label:CHARACTER:TCPIP_Clinet.TCPIP Client Receive
 					Catalog:CHARACTER:BIPmsgs
 					Severity:INTEGER:3
 					Number:INTEGER:2230
 					Text:CHARACTER:Caught exception and rethrowing
 					Insert
 							Type:INTEGER:14
-							Text:CHARACTER:TCPIPServer.Compute
-					RecoverableException
-							File:CHARACTER:C:\ci\product-build\WMB\src\DataFlowEngine\ImbRdl\ImbRdlStatementGroup.cpp
-							Line:INTEGER:785
-							Function:CHARACTER:SqlStatementGroup::execute
-							Type:CHARACTER:
-							Name:CHARACTER:
-							Label:CHARACTER:
+							Text:CHARACTER:TCPIP_Clinet.TCPIP Client Receive
+					ParserException
+							File:CHARACTER:C:\ci\product-build\WMB\src\DataFlowEngine\MessageServices\ImbRootParser.cpp
+							Line:INTEGER:889
+							Function:CHARACTER:ImbRootParser::parseNextItem
+							Type:CHARACTER:ComIbmWSInputNode
+							Name:CHARACTER:TCPIP_Clinet#FCMComposite_1_9
+							Label:CHARACTER:TCPIP_Clinet.HTTP Input
 							Catalog:CHARACTER:BIPmsgs
-							Severity:INTEGER:3
-							Number:INTEGER:2488
-							Text:CHARACTER:Error detected, rethrowing
+							Severity:INTEGER:2
+							Number:INTEGER:5902
+							Text:CHARACTER:Exception whilst parsing
 							Insert
 									Type:INTEGER:5
-									Text:CHARACTER:.TCPIPServer_Compute.Main
+									Text:CHARACTER:Root
 							Insert
 									Type:INTEGER:5
-									Text:CHARACTER:3.3
+									Text:CHARACTER:BLOB
 							Insert
 									Type:INTEGER:5
-									Text:CHARACTER:CALL CopyEntireMessage();
+									Text:CHARACTER:Stream Based Buffer - no stream data read in yet.
+							Insert
+									Type:INTEGER:5
+									Text:CHARACTER:TCPIP_Clinet.HTTP Input
 							RecoverableException
-									File:CHARACTER:C:\ci\product-build\WMB\src\DataFlowEngine\ImbRdl\ImbRdlRoutine.cpp
-									Line:INTEGER:1337
-									Function:CHARACTER:SqlRoutine::invoke
+									File:CHARACTER:C:\ci\product-build\WMB\src\DataFlowEngine\MessageServices\ImbParser.cpp
+									Line:INTEGER:4272
+									Function:CHARACTER:ImbParser::refreshElementsFromBitStream
 									Type:CHARACTER:
 									Name:CHARACTER:
 									Label:CHARACTER:
 									Catalog:CHARACTER:BIPmsgs
 									Severity:INTEGER:3
-									Number:INTEGER:2934
-									Text:CHARACTER:Error occured in procedure
+									Number:INTEGER:6066
+									Text:CHARACTER:Parser record sequence is not supported by this parser.
 									Insert
 											Type:INTEGER:5
-											Text:CHARACTER:CopyEntireMessage
-									RecoverableException
-											File:CHARACTER:C:\ci\product-build\WMB\src\DataFlowEngine\ImbRdl\ImbRdlStatementGroup.cpp
-											Line:INTEGER:785
-											Function:CHARACTER:SqlStatementGroup::execute
-											Type:CHARACTER:
-											Name:CHARACTER:
-											Label:CHARACTER:
-											Catalog:CHARACTER:BIPmsgs
-											Severity:INTEGER:3
-											Number:INTEGER:2488
-											Text:CHARACTER:Error detected, rethrowing
-											Insert
-													Type:INTEGER:5
-													Text:CHARACTER:.TCPIPServer_Compute.CopyEntireMessage
-											Insert
-													Type:INTEGER:5
-													Text:CHARACTER:29.7
-											Insert
-													Type:INTEGER:5
-													Text:CHARACTER:SET OutputRoot.BLOB.BLOB = CAST(outputStr AS BLOB);
-											RecoverableException
-													File:CHARACTER:C:\ci\product-build\WMB\src\DataFlowEngine\ImbRdl\ImbRdlTypeCast.cpp
-													Line:INTEGER:339
-													Function:CHARACTER:SqlTypeCast::evaluate
-													Type:CHARACTER:
-													Name:CHARACTER:
-													Label:CHARACTER:
-													Catalog:CHARACTER:BIPmsgs
-													Severity:INTEGER:3
-													Number:INTEGER:2521
-													Text:CHARACTER:Error casting from %3 to %4
-													Insert
-															Type:INTEGER:5
-															Text:CHARACTER:.TCPIPServer_Compute.CopyEntireMessage
-													Insert
-															Type:INTEGER:5
-															Text:CHARACTER:29.32
-													Insert
-															Type:INTEGER:5
-															Text:CHARACTER:'CMS1111111111111111111KKBK0000958Y'
-													Insert
-															Type:INTEGER:5
-															Text:CHARACTER:BLOB
-													RecoverableException
-															File:CHARACTER:C:\ci\product-build\WMB\src\CommonServices\ImbValue.cpp
-															Line:INTEGER:867
-															Function:CHARACTER:ImbValue::fromCharacter
-															Type:CHARACTER:
-															Name:CHARACTER:
-															Label:CHARACTER:
-															Catalog:CHARACTER:BIPmsgs
-															Severity:INTEGER:3
-															Number:INTEGER:2590
-															Text:CHARACTER:String is not of correct form for byte array. Must consist of only 0..9,a..f,A..Z
-															Insert
-																	Type:INTEGER:5
-																	Text:CHARACTER:CMS1111111111111111111KKBK0000958Y
+											Text:CHARACTER:none
+
 
 
 
@@ -169,6 +116,8 @@ CREATE COMPUTE MODULE TCPIPServer_Compute
 		--SET OutputRoot.JSON.Data.text = outputStr ;
        
     --   SET OutputRoot.BLOB.BLOB=outputStr;
-      SET OutputRoot.BLOB.BLOB=CAST(outputStr as blob);
+  
+         
+         SET OutputRoot.BLOB.BLOB = CAST(outputStr AS BLOB CCSID 1208);
 	END;
 END MODULE;
