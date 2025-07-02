@@ -1,0 +1,341 @@
+{A:CBSF01O298N07GSCB0NEFTSCRBIP0NEFTSC222000GSCBN251212064552EFT2025050111052110491371XXXXXXXXXGSCBN2512120645599}
+{4:
+:2020:GSCON25121206455
+:1106:1
+:4063:1000,00
+:2020:GSCBN25121206455
+:2006:    000438908007
+:4038:1000,00
+:3380:20250501
+:5756:GSCB0000001
+:6021:107016097029
+:6091:ROHIT ARJAN VAGHELA
+:7002:KAJIPURCIT
+Instruct
+
+
+:5569:RATN0000999
+:6061:2309109900110017
+:6081:KAJIPURCIT
+:6346:R03
+:6366:INVALID ACCOUNT NUMBER
+-}
+
+DECLARE N07Header REFERENCE TO InputRoot.DFDL.N07.Header;
+						DECLARE N07Record REFERENCE TO InputRoot.DFDL.N07.Body.record[1];
+						DECLARE N07Body REFERENCE TO InputRoot.DFDL.N07.Body;
+						WHILE LASTMOVE(N07Record) DO
+							IF (enable_flag = 'Y') AND (sod_date <> '00000000') AND (sType = 'k') AND ((sod_date <> N07Header.ORIGINATINGDATE) OR (sod_date <> N07Record.VALUEDATE)) THEN
+								SET header_date = N07Header.ORIGINATINGDATE;
+								SET body_date = N07Record.VALUEDATE;
+								CALL log4j_1_1('DB_INSERT', 'GUJ_NEFT_OUTWARD', 'INFO','Header date changed from '||header_date||' to '||sod_date) INTO rc;
+								CALL log4j_1_1('DB_INSERT', 'GUJ_NEFT_OUTWARD', 'INFO','Body date changed from '||body_date||' to '||sod_date) INTO rc;
+								SET N07Header.ORIGINATINGDATE = sod_date;
+								SET N07Record.VALUEDATE = sod_date;
+							END IF;
+							SET msg = '';
+							CALL getMsg(N07Header,N07Record,N07Body,sType,msg);
+							CALL insertDatabase(N07Header,N07Record,N07Body,sType,msg );
+							CALL updateDatabaseN07(N07Record);
+							MOVE N07Record NEXTSIBLING;
+						END WHILE;
+						CALL log4j_1_1('DB_INSERT', 'GUJ_NEFT_OUTWARD', 'INFO','Message Type is : '||sType) INTO rc;
+						CALL log4j_1_1('DB_INSERT', 'GUJ_NEFT_OUTWARD', 'INFO','Data inserted into NEFT_OUT,NEFT_MSG_OUT and updated in NEFT_IN table') INTO rc;
+						
+						
+						CREATE PROCEDURE getMsg(IN HeaderRef REFERENCE, IN RecRef REFERENCE,IN BodyRef REFERENCE, IN stype2 CHARACTER, INOUT msg2 CHARACTER )
+	BEGIN
+		DECLARE Outref REFERENCE TO OutputRoot.DFDL;
+		DECLARE whiteSpace CONSTANT CHARACTER CAST( X'090D0A20' AS CHAR CCSID 1208);
+		SET Outref.{stype2}.Header = HeaderRef;
+		SET Outref.{stype2}.Body.BLOCKIDENTIFIER = TRIM(whiteSpace FROM BodyRef.BLOCKIDENTIFIER);
+		SET Outref.{stype2}.Body.TRANSACTIONREFERENCENUMBER = BodyRef.TRANSACTIONREFERENCENUMBER;
+		SET Outref.{stype2}.Body.BATCHTIME = BodyRef.BATCHTIME;
+		SET Outref.{stype2}.Body.TOTALNUMBEROFMESSAGES = BodyRef.TOTALNUMBEROFMESSAGES;
+		SET Outref.{stype2}.Body.SUMOFAMOUNTS = BodyRef.SUMOFAMOUNTS;
+		SET Outref.{stype2}.Body.record = RecRef;
+		DECLARE wholeMsgBlob BLOB ASBITSTREAM(OutputRoot.DFDL, InputRoot.Properties.Encoding, InputRoot.Properties.CodedCharSetId );
+	 	DECLARE wholeMsgChar CHAR CAST(wholeMsgBlob AS CHAR CCSID InputRoot.Properties.CodedCharSetId);
+		SET msg2 = wholeMsgChar;
+		--SET OutputRoot.DFDL = NULL;
+		
+	END;
+	
+	
+	
+	CREATE PROCEDURE insertDatabase(IN Header REFERENCE, IN Rec REFERENCE,IN Body REFERENCE, IN msgType CHARACTER, IN msg CHARACTER ) 
+	BEGIN
+		DECLARE whiteSpace CONSTANT CHARACTER CAST( X'090D0A20' AS CHAR CCSID 1208);
+		DECLARE OrgRemitRef REFERENCE TO Rec.ORIGINATOROFREMITTANCE.LINE1;
+		DECLARE BenAddrRef REFERENCE TO Rec.BENEFICIARYCUSTOMERADDRESS.LINE1;
+		DECLARE SendToRecvInfoRef REFERENCE TO Rec.SENDERTIRECEIVERINFORMATION.LINE1;
+		DECLARE branchCode CHARACTER InputRoot.DFDL.*.SpaceFiller;
+		SET branchCode = SUBSTRING(branchCode FROM 1 FOR 5);
+		IF LENGTH(branchCode) is null OR LENGTH(branchCode) < 5  THEN
+			SET branchCode = '00000';
+		END IF;
+		--SET branchCode = TRIM(whiteSpace FROM branchCode);
+		--DECLARE msgType CHARACTER FIELDNAME(InputRoot.DFDL.*);
+		DECLARE relRefNum CHARACTER;
+		DECLARE Relref REFERENCE TO Rec.RELATED_REFERENCE_NUMBER;
+		IF LASTMOVE(Relref) THEN
+			SET relRefNum = Relref;			
+		END IF;
+		--DECLARE bankName CHARACTER 'bankname';
+		DECLARE bankNameref ROW;    
+		DECLARE sIFSC CHARACTER TRIM(whiteSpace FROM Rec.SENDINGBRANCHIFSC);
+		
+		DECLARE DB_Details ROW;
+   		 DECLARE Qry CHARACTER 'SELECT A.BANKNAME FROM IFSC_BANKNAME A WHERE A.IFSC = ? ';
+   		 SET DB_Details.A[] = PASSTHRU(Qry TO Database.{DSN} VALUES(sIFSC));
+		SET Environment.bankName = DB_Details.A[1].BANKNAME;
+		DECLARE orgRemt CHARACTER '';
+		DECLARE benAddr CHARACTER '';
+		DECLARE sendToRecvInfo CHARACTER '';
+		WHILE lastmove(OrgRemitRef) DO
+			SET orgRemt = orgRemt||OrgRemitRef;
+			MOVE OrgRemitRef NEXTSIBLING;
+		END WHILE;
+		WHILE lastmove(BenAddrRef) DO
+			SET benAddr = benAddr||BenAddrRef;
+			MOVE BenAddrRef NEXTSIBLING;
+		END WHILE;
+		WHILE lastmove(SendToRecvInfoRef) DO
+			SET sendToRecvInfo = sendToRecvInfo||SendToRecvInfoRef;
+			MOVE SendToRecvInfoRef NEXTSIBLING;
+		END WHILE;
+		/*DECLARE wholeMsgBlob BLOB ASBITSTREAM(InputRoot.DFDL, Root.Properties.Encoding, Root.Properties.CodedCharSetId );
+	 	DECLARE wholeMsgChar CHAR CAST(wholeMsgBlob AS CHAR CCSID InputRoot.Properties.CodedCharSetId);*/
+	 	DECLARE trRef CHARACTER TRIM(whiteSpace FROM Rec.TRANSACTIONREFERENCENUMBER);
+	 	/*
+	 	:6346:R03 / <REASON_CODE>
+		:6366:ACCOUNT NO DOES NOT EXIST / <REJECTION_CODE>
+	 	*/
+	 	DECLARE rejectCode CHARACTER '';
+	 	DECLARE rejectReason CHARACTER '';
+	 	IF Environment.msgtype = 'N07' THEN
+	 		SET rejectCode = Rec.REASON_CODE;
+	 		SET rejectReason = Rec.REJECTION_CODE;
+	 	END IF;
+	 	DECLARE bIFSC CHARACTER TRIM(whiteSpace FROM Rec.BENEFICIARYBRANCHSIFSC);
+	 	DECLARE vdate CHARACTER TRIM(whiteSpace FROM Rec.VALUEDATE);
+	 	DECLARE bname CHARACTER TRIM(whiteSpace FROM Environment.bankName);
+	 	DECLARE cTime CHARACTER CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'dd-MMM-yyyy HH:mm:ss');
+	 	DECLARE inc_utr CHARACTER LEFT(sIFSC,4)||vdate||'5'||RIGHT(trRef,9);
+		-- Production server query.
+		INSERT INTO Database.NEFT_MSG_OUT (TRAN_REF_NO,SENDER_CORRES,RECVR_CORRES,MSG,TRAN_DATE,BANKNAME,CREATION_TIME,CREATION_TIME_STAMP) 
+		VALUES ( trRef,
+		sIFSC,
+		bIFSC,
+		msg,
+		vdate,
+		bname,
+		cTime,
+		CURRENT_TIMESTAMP
+		);
+		/*INSERT INTO Database.NEFT_MSG_OUT (TRAN_REF_NO,SENDER_CORRES,RECVR_CORRES,MSG,TRAN_DATE,BANKNAME,CREATION_TIME) 
+		VALUES ( trRef,
+		sIFSC,
+		bIFSC,
+		msg,
+		vdate,
+		bname,
+		cTime
+		);*/
+		INSERT INTO Database.NEFT_OUT (TRAN_REF_NO,INC_UTR,TRAN_DATE,AMOUNT,IFSC_SENDER,SENDER_ACCT_TYPE,SENDER_ACCT_NO,SENDER_ACCT_NAME,
+		ORIG_REMITTANCE,IFSC_RECVR,RECVR_ACCT_TYPE,RECVR_ACCT_NO,RECVR_ACCT_NAME,BENEF_ADDRS,SEND_TO_RECE_INFO,REJECT_CODE,
+		REJECT_REASON,ACK_NACK,CREATION_TIME,LAST_MOD_TIME,OUT_MSG_SENT_SBI,BANKNAME,TRAN_BRANCH,ACK_NACKOUT_SEND_CBS,
+		SUB_MSG_TYPE,ACK_NACK_TIME,RET_ORG_ERR,DUP_ORG_OUT,N10_ACKNACK,SEQINHEADER,TRAN_REF_RETURN_UTR,LAST_UPD_STAMP,
+		CREATION_TIME_STAMP) 
+		 VALUES 
+		(Rec.TRANSACTIONREFERENCENUMBER,
+		 inc_utr,
+		 Rec.VALUEDATE,
+		 Rec.AMOUNT,
+		 Rec.SENDINGBRANCHIFSC,
+		 Rec.SENDINGCUSTOMERACCOUNTTYPE,
+		 Rec.SENDINGCUSTOMERACCOUNTNUMBER,
+		 Rec.SEDINGCUSTOMERACCOUNTNAME,
+		 orgRemt,
+		 Rec.BENEFICIARYBRANCHSIFSC,
+		 Rec.BENEFICIARYCUSTOMERACTYPE,
+		 Rec.BENEFICIARYCUSTOMERACNUMBER,
+		 Rec.BENEFICIARYCUSTOMERACNAME,
+		 benAddr,
+		 sendToRecvInfo,
+		 rejectCode,
+		 rejectReason,
+		 '0',
+		 cTime,
+		 cTime,
+		 '0',
+		 Environment.bankName,
+		 branchCode,
+		 '0',
+		 msgType,
+		 '0',
+		 '0',
+		 '0',
+		 '0',
+		 Header.SEQUENCENUMBER,
+		 relRefNum,
+		 CURRENT_TIMESTAMP,
+		 CURRENT_TIMESTAMP
+		 );
+	END;
+	CREATE PROCEDURE updateLocalEnv() BEGIN
+		DECLARE key CHARACTER 'key';-- Environment.bankName||'_'||Environment.stype;
+		DECLARE bank CHARACTER TRIM(Environment.bankName);
+		DECLARE rc BOOLEAN;
+		IF Environment.msgtype='N06' THEN
+			SET key = 'OUT_'||bank;
+		ELSEIF Environment.msgtype='N07' THEN
+			SET key = 'OUT_'||bank;
+		ELSE
+			SET key = 'N10_OUT_'||bank;
+		END IF;
+		CALL log4j_1_1('DB_INSERT', 'GUJ_NEFT_OUTWARD', 'INFO','Retrieving values from properties file') INTO rc;
+		DECLARE fileLoc,ftpProvider CHARACTER;
+		-- Reading values from properties file.
+		CALL getProp( PROP_LOC, key,bank, fileLoc, ftpProvider);
+		--Logging
+		CALL log4j_1_1('DB_INSERT', 'GUJ_NEFT_OUTWARD', 'INFO','Bank name : '||bank) INTO rc;
+		CALL log4j_1_1('DB_INSERT', 'GUJ_NEFT_OUTWARD', 'INFO','FTP Provider name : '||ftpProvider) INTO rc;
+		CALL log4j_1_1('DB_INSERT', 'GUJ_NEFT_OUTWARD', 'INFO','Remote Server directory : '||fileLoc) INTO rc;
+		-- Updating local Environment.
+		
+--		SET OutputLocalEnvironment.Destination.File.Name = Environment.filename||'.DONE';
+		SET OutputLocalEnvironment.Destination.File.Remote.Server = trim(ftpProvider);
+		SET OutputLocalEnvironment.Destination.File.Remote.ServerDirectory = fileLoc;
+		
+		
+		CREATE PROCEDURE updateDatabaseN07(IN record REFERENCE)
+	BEGIN
+		DECLARE relRefNum,tranRefNum CHARACTER;
+		DECLARE currentTime CHARACTER CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'dd-MMM-yyyy HH:mm:ss');
+		DECLARE Relref REFERENCE TO record.RELATED_REFERENCE_NUMBER;--2006
+		DECLARE TranRef REFERENCE TO record.TRANSACTIONREFERENCENUMBER; --2020
+		DECLARE whiteSpace CONSTANT CHARACTER CAST( X'090D0A20' AS CHAR CCSID 1208);
+		IF LASTMOVE(Relref) THEN
+			SET relRefNum = TRIM(whiteSpace FROM Relref);			
+		END IF;
+		SET tranRefNum = TRIM(whiteSpace FROM TranRef);	
+		DECLARE ref ROW;
+		--update neft_in set ACK_NACK='N',LAST_UPD_STAMP=? ,ACK_NACK_FROM_CBS='Y',ACK_NACK_SEND_MQ='R' where TRAN_REF_NO=?
+		DECLARE qry CHARACTER 'UPDATE NEFT_IN SET ACK_NACK=''N'', LAST_UPD_STAMP = CURRENT_TIMESTAMP, ACK_NACK_SEND_MQ = ''R'' , ACK_NACK_FROM_CBS=''Y'', TRAN_REF_RETURN_UTR = ? WHERE TRAN_REF_NO = ?';
+		SET ref.A[] = PASSTHRU(qry TO Database.{DSN} VALUES(tranRefNum,relRefNum));
+		
+		DECLARE UTRref ROW;    
+		SET UTRref.R[] = PASSTHRU('SELECT ORG_MSG_ID,ORG_TXN_ID FROM NEFT_IN WHERE  TRAN_REF_NO= ?' TO Database.{DSN} VALUES(relRefNum));
+		SET OutputLocalEnvironment.Variables.temp.OrgnlTxId = UTRref.R[1].ORG_TXN_ID;
+		SET OutputLocalEnvironment.Variables.temp.OrgnlMsgId = UTRref.R[1].ORG_MSG_ID;
+		
+	END;
+
+<RequestPayload>
+    <AppHdr xmlns="urn:iso:std:iso:20022:tech:xsd:head.001.001.02" xmlns:xsi="urn:iso:std:iso:20
+022:tech:xsd:Header" xmlns:sig="http://www.w3.org/2000/09/xmldsig#">
+        <Fr>
+            <FIId>
+                <FinInstnId>
+                    <ClrSysMmbId>
+                        <MmbId>GSCB0NEFTSC</MmbId>
+                    </ClrSysMmbId>
+                </FinInstnId>
+            </FIId>
+        </Fr>
+        <To>
+            <FIId>
+                <FinInstnId>
+                    <ClrSysMmbId>
+                        <MmbId>RBIP0NEFTSC</MmbId>
+                    </ClrSysMmbId>
+                </FinInstnId>
+            </FIId>
+        </To>
+        <BizMsgIdr>GSCB202505015121206455</BizMsgIdr>
+        <MsgDefIdr>pacs.004.001.10</MsgDefIdr>
+        <BizSvc>NEFTPaymentReturn</BizSvc>
+        <CreDt>2025-05-01T11:05:00Z</CreDt>
+    </AppHdr>
+    <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.004.001.10">
+        <PmtRtr>
+            <GrpHdr>
+                <MsgId>GSCB202505015121206455</MsgId>
+                <CreDtTm>2025-05-01T11:05:00</CreDtTm>
+                <NbOfTxs>1</NbOfTxs>
+                <TtlRtrdIntrBkSttlmAmt Ccy="INR">1000.00</TtlRtrdIntrBkSttlmAmt>
+                <IntrBkSttlmDt>2025-05-01</IntrBkSttlmDt>
+                <SttlmInf>
+                    <SttlmMtd>CLRG</SttlmMtd>
+                </SttlmInf>
+                <InstgAgt>
+                    <FinInstnId>
+                        <ClrSysMmbId>
+                            <MmbId>GSCB0NEFTSC</MmbId>
+                        </ClrSysMmbId>
+                    </FinInstnId>
+                </InstgAgt>
+                <InstdAgt>
+                    <FinInstnId>
+                        <ClrSysMmbId>
+                            <MmbId>RBIP0NEFTSC</MmbId>
+                        </ClrSysMmbId>
+                    </FinInstnId>
+                </InstdAgt>
+            </GrpHdr>
+            <TxInf>
+                <RtrId>GSCBN52025050121206455</RtrId>
+                <OrgnlEndToEndId>/XUTR/    000438908007</OrgnlEndToEndId>
+                <OrgnlTxId/>
+                <RtrdIntrBkSttlmAmt Ccy="INR">1000.00</RtrdIntrBkSttlmAmt>
+                <RtrRsnInf>
+                    <Rsn>
+                        <Cd>AC01</Cd>
+                    </Rsn>
+                </RtrRsnInf>
+                <OrgnlTxRef>
+                    <UndrlygCstmrCdtTrf>
+                        <Dbtr>
+                            <Nm>KAJIPURCIT</Nm>
+                        </Dbtr>
+                        <DbtrAcct>
+                            <Id>
+                                <Othr>
+                                    <Id>2309109900110017</Id>
+                                </Othr>
+                            </Id>
+                        </DbtrAcct>
+                        <DbtrAgt>
+                            <FinInstnId>
+                                <ClrSysMmbId>
+                                    <MmbId>RATN0000999</MmbId>
+                                </ClrSysMmbId>
+                            </FinInstnId>
+                        </DbtrAgt>
+                        <CdtrAgt>
+                            <FinInstnId>
+                                <ClrSysMmbId>
+                                    <MmbId>GSCB0000001</MmbId>
+                                </ClrSysMmbId>
+                            </FinInstnId>
+                        </CdtrAgt>
+                        <Cdtr>
+                            <Nm>ROHIT ARJAN VAGHELA</Nm>
+                        </Cdtr>
+                        <CdtrAcct>
+                            <Id>
+                                <Othr>
+                                    <Id>107016097029</Id>
+                                </Othr>
+                            </Id>
+                        </CdtrAcct>
+                        <InstrForCdtrAgt>
+                            <InstrInf>KAJIPURCITInstruct</InstrInf>
+                        </InstrForCdtrAgt>
+                    </UndrlygCstmrCdtTrf>
+                </OrgnlTxRef>
+            </TxInf>
+        </PmtRtr>
+    </Document>
+</RequestPayload>
