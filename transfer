@@ -1,45 +1,112 @@
-CREATE COMPUTE MODULE app1_Compute
-    CREATE FUNCTION Main() RETURNS BOOLEAN
-    BEGIN
-        -- CALL CopyMessageHeaders(); -- Uncomment if needed
-        CALL CopyEntireMessage();
-        RETURN TRUE;
-    END;
+BROKER SCHEMA com.cedge.ifsc
 
-    CREATE PROCEDURE CopyMessageHeaders() 
-    BEGIN
-        DECLARE I INTEGER 1;
-        DECLARE J INTEGER;
-        SET J = CARDINALITY(InputRoot.*[]);
-        WHILE I < J DO
-            SET OutputRoot.*[I] = InputRoot.*[I];
-            SET I = I + 1;
-        END WHILE;
-    END;
+DECLARE ns6 NAMESPACE 'urn:iso:std:iso:20022:tech:xsd:admi.004.001.01';
 
-    CREATE PROCEDURE CopyEntireMessage() 
-    BEGIN
-        DECLARE result CHARACTER;
-        CALL CopyEntireMessage2('hello', 'world', result);
-        -- Log result if needed, for example:
-        -- SET Environment.Variables.myResult = result;
-        
-        SET OutputRoot = InputRoot;
-    END;
+CREATE FUNCTION initLog4j( IN CONFIG_FILE_NAME CHARACTER )
+RETURNS BOOLEAN
+LANGUAGE JAVA
+EXTERNAL NAME "com.ibm.broker.IAM3.Log4jNode.initLog4j";
+CREATE FUNCTION log4j( IN COMPONENT_NAME CHARACTER,
+IN LEVEL CHARACTER,
+IN TEXT CHARACTER )
+RETURNS BOOLEAN
+LANGUAGE JAVA
+EXTERNAL NAME "com.ibm.broker.IAM3.Log4jNode.log";
+CREATE FUNCTION log4j_1_1( IN COMPONENT_NAME CHARACTER,
+IN LOGGER_NAME CHARACTER,
+IN LEVEL CHARACTER,
+IN TEXT CHARACTER )
+RETURNS BOOLEAN
+LANGUAGE JAVA
+EXTERNAL NAME "com.ibm.broker.IAM3.Log4jNode.log";
 
-    CREATE PROCEDURE CopyEntireMessage2(
-        IN str CHARACTER,
-        IN str2 CHARACTER,
-        INOUT res CHARACTER
-    ) 
-    BEGIN
-        SET res = str || ' ' || str2;
-    END;
+CREATE COMPUTE MODULE PROCESS_POLIFERATION_PROCESS_CBS
+	DECLARE DSNNAME EXTERNAL CHARACTER;
+	DECLARE SCHEMANAME EXTERNAL CHARACTER;
+	DECLARE PROP_LOC EXTERNAL CHARACTER;
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		-- CALL CopyMessageHeaders();
+		   DECLARE bool BOOLEAN;
+		   SET bool = CopyEntireMessage();
+		   RETURN bool;
+	END;
 
+	CREATE PROCEDURE CopyMessageHeaders() BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.*[]);
+		WHILE I < J DO
+			SET OutputRoot.*[I] = InputRoot.*[I];
+			SET I = I + 1;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE CopyEntireMessage() RETURNS BOOLEAN  BEGIN
+-- 		SET OutputRoot = InputRoot;
+		DECLARE rc BOOLEAN;
+		CALL initLog4j('/var/iib/interface/ifsc/inward/properties/log4j/ifsc_inward.xml') INTO rc;
+		CALL log4j_1_1('IFSC_POLIFERATION_PROCESS', 'IFSC_IN', 'WARN','---------------START---------------') INTO rc;
+		DECLARE AdmiRef004 REFERENCE TO InputRoot.MRM.ns6:SysEvtNtfnV01; 
+		DECLARE evntDesc  CHARACTER '';
+		DECLARE fileLoc,ftpProvider,key,bankName CHARACTER;
+		DECLARE BankName_List ROW;
+		SET evntDesc = AdmiRef004.ns6:EvtInf.ns6:EvtDesc;	
+		IF STARTSWITH(evntDesc,'*|') OR STARTSWITH(evntDesc,'+|') OR STARTSWITH(evntDesc,'-|') THEN
+				DECLARE i INTEGER 1;
+				WHILE i <> 14 DO
+				SET Environment.evntDesc.data[i] = SUBSTRING(evntDesc BEFORE '|');
+				IF TRIM(Environment.evntDesc.data[i]) = '' THEN
+					SET Environment.evntDesc.data[i] = evntDesc;
+					END IF;
+					SET evntDesc = SUBSTRING(evntDesc AFTER '|');
+					SET i = i + 1;
+			 	END WHILE;
+				CALL log4j_1_1('IFSC_POLIFERATION_PROCESS', 'IFSC_IN', 'WARN','The Message is an IFSC Proliferation Message') INTO rc;				
+				END IF;
+				
+			DECLARE Bank_Name_Qry CHARACTER 'SELECT A.BANKNAME FROM '||SCHEMANAME||'.BANKNAME A';
+			SET BankName_List.List[] = PASSTHRU(Bank_Name_Qry TO Database.{DSNNAME});			
+			DECLARE BankName_Cursor REFERENCE TO BankName_List;
+			MOVE BankName_Cursor FIRSTCHILD;
+			DECLARE CurDate CHARACTER CAST(CURRENT_DATE AS CHAR format 'YYYYMMdd');
+			
+			WHILE LASTMOVE(BankName_Cursor) DO
+				SET bankName = TRIM(FIELDVALUE(BankName_Cursor.BANKNAME));
+			
+				SET key = bankName;
+				CALL getProp(PROP_LOC, key, fileLoc, ftpProvider , bankName);
+				
+				SET Environment.SeqHeader = PASSTHRU('select SEQ_IFSCBANKNAME.nextval FROM dual' TO Database.{DSNNAME});
+				SET Environment.SeqHeader_Char = CAST(CAST(Environment.SeqHeader.NEXTVAL AS INTEGER) AS CHARACTER);
+				
+				SET OutputLocalEnvironment.Destination.File.Remote.Server = ftpProvider;
+				SET OutputLocalEnvironment.Destination.File.Remote.ServerDirectory = fileLoc;
+				SET OutputLocalEnvironment.Destination.File.Name = 'RBIIFSC_'||CurDate||'_'||Environment.SeqHeader_Char||'.txt';
+				
+				CALL log4j_1_1('IFSC_POLIFERATION_PROCESS', 'IFSC_IN', 'WARN','FTP Details for :'||bankName) INTO rc;
+				CALL log4j_1_1('IFSC_POLIFERATION_PROCESS', 'IFSC_IN', 'WARN','FileName : '||OutputLocalEnvironment.Destination.File.Name) INTO rc;
+				CALL log4j_1_1('IFSC_POLIFERATION_PROCESS', 'IFSC_IN', 'WARN','FTP Provider Name : '||ftpProvider) INTO rc;
+				CALL log4j_1_1('IFSC_POLIFERATION_PROCESS', 'IFSC_IN', 'WARN','Remote Location Diretory Name : '||fileLoc) INTO rc;
+				
+				--Creating output message for IFSC proliferation
+
+				SET OutputRoot.DFDL.IFSC_PROLFRTN.PROLIFERTAION_TYPE = Environment.evntDesc.data[1];
+				SET OutputRoot.DFDL.IFSC_PROLFRTN.IFSC_CODE = Environment.evntDesc.data[2];
+				SET OutputRoot.DFDL.IFSC_PROLFRTN.BANK_NAME = Environment.evntDesc.data[5];
+				SET OutputRoot.DFDL.IFSC_PROLFRTN.BRANCH_NAME = Environment.evntDesc.data[6];
+				SET OutputRoot.DFDL.IFSC_PROLFRTN.ADDRS = Environment.evntDesc.data[8];
+				SET OutputRoot.DFDL.IFSC_PROLFRTN.DISTRICT = Environment.evntDesc.data[10];
+
+				PROPAGATE TO TERMINAL 0 DELETE NONE;	
+				MOVE BankName_Cursor NEXTSIBLING;
+			END WHILE;
+
+				
+			CALL log4j_1_1('IFSC_POLIFERATION_PROCESS', 'IFSC_IN', 'WARN','---------------END---------------') INTO rc;
+	RETURN FALSE;			
+	END;
+	CREATE PROCEDURE  getProp( IN P1 CHARACTER, IN P2 CHARACTER, INOUT P3 CHARACTER,INOUT P4 CHARACTER , IN P5 CHARACTER)
+ 	LANGUAGE JAVA 
+ 	EXTERNAL NAME "com.cedge.ifsc.IFSC_INWARD_LoadProperties.getProperties";	
 END MODULE;
-CREATE FUNCTION CopyEntireMessage2(IN str CHARACTER, IN str2 CHARACTER) RETURNS CHARACTER
-BEGIN
-    RETURN str || ' ' || str2;
-END;
-DECLARE result CHARACTER;
-SET result = CopyEntireMessage2('hello', 'world');
