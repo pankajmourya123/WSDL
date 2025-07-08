@@ -1,0 +1,477 @@
+/var/iib/interface/guj/rtgs/outward/newbackup/N10
+/var/iib/interface/guj/rtgs/outward/newbackup/R41
+/var/iib/interface/guj/rtgs/outward/newbackup/R41/RR42
+/var/iib/interface/guj/rtgs/outward/backup/
+/var/iib/interface/guj/rtgs/outward/backup/ftp_fail
+/var/iib/interface/guj/neft/inward/file_backup/
+/var/iib/interface/guj/rtgs/inward/file_backup
+/var/iib/interface/guj/neft/outward/backup/
+
+
+/fns/a9/r/spool/Interfaces/NEFT/OUTGOING/
+/fns/a9/r/spool/Interfaces/NEFT/OUTGOING/N10-OUTGOING/
+/fns/a9/r/spool/Interfaces/RTGS/OUTWARD/
+/fns/a9/r/spool/Interfaces/RTGS/RR42-OUTWARD/
+/fns/a9/r/spool/Interfaces/RTGS/N10-OUTWARD
+/var/iib/interface/apcob/rtgs/outward/file_backup/apcob/N10
+/fns/a9/r/spool/Interfaces/RTGS/RR42-OUTWARD
+/var/iib/interface/apcob/rtgs/outward/file_backup/apcob/RR42
+/fns/a9/r/spool/Interfaces/RTGS/OUTWARD
+/var/iib/interface/apcob/rtgs/outward/file_backup/apcob/R41
+/var/iib/interface/apcob/neft/outward/file_backup/apcob/N06
+/fns/a9/r/spool/Interfaces/NEFT/OUTGOING/
+/var/iib/interface/apcob/neft/outward/file_backup/apcob/N10
+/fns/a9/r/spool/Interfaces/NEFT/OUTGOING/N10-OUTGOING/
+/var/iib/interface/apcob/rtgs/outward/file_backup/apcob/R41
+/fns/a9/r/spool/Interfaces/RTGS/OUTWARD
+
+/var/iib/interface/apcob/neft/inward/file_backup/apcob/N02
+/fns/a9/r/spool/Interfaces/NEFT/INCOMING/N02
+/var/iib/interface/apcob/neft/inward/file_backup/apcob/N09
+/fns/a9/r/spool/Interfaces/RTGS/RTGS-INCOMING-RBI/
+/var/iib/interface/apcob/neft/inward/file_backup/apcob/N10
+/fns/a9/r/spool/Interfaces/NEFT/INCOMING/N10-INCOMING/
+/var/iib/interface/apcob/neft/inward/file_backup/apcob/F27
+/fns/a9/r/spool/Interfaces/NEFT/INCOMING/OUTGOING-RESPONSE
+/var/iib/interface/apcob/rtgs/inward/file_backup/apcob/R41
+/var/iib/interface/apcob/rtgs/inward/file_backup/apcob/N10
+/fns/a9/r/spool/Interfaces/RTGS/N10-INCOMING
+/var/iib/interface/apcob/neft/inward/file_backup/apcob/IFSC
+/fns/a9/r/spool/Interfaces/NEFT/IFSC/
+/fns/a9/r/spool/Interfaces/NEFT/INCOMING/N04
+/var/iib/interface/apcob/neft/inward/file_backup/apcob/N04/
+/var/iib/interface/apcob/neft/inward/file_backup/apcob/972/
+/fns/a9/r/spool/Interfaces/NEFT/OUTGOING/SOD
+
+======================================================================
+
+/var/mqsi/components/IIBPRODBRKR/servers/PANKAJ/run/GUJ_BRD_CBS
+[iibadmin@dciibprod-uat GUJ_BRD_CBS]$ cat GUJ_BRD_CBS.policyxml
+<?xml version="1.0" encoding="UTF-8"?>
+<policies>
+  <policy policyType="FtpServer" policyName="GUJ_BRD_CBS" policyTemplate="FtpServer">
+    <fileFtpServer>10.42.34.13</fileFtpServer>
+    <fileFtpAccountInfo></fileFtpAccountInfo>
+    <fileFtpDirectory></fileFtpDirectory>
+    <fileFtpUser>GUJ_BRD_CBS</fileFtpUser>
+    <fileFtpTransferMode>BINARY</fileFtpTransferMode>
+    <fileFtpScanDelay></fileFtpScanDelay>
+    <fileFtpConnectionType>PASSIVE</fileFtpConnectionType>
+    <strictHostKeyChecking>false</strictHostKeyChecking>
+    <allowedCiphers></allowedCiphers>
+    <fileFtpCompression>0</fileFtpCompression>
+    <remoteTransferType></remoteTransferType>
+    <knownHostsFile></knownHostsFile>
+    <sslProtocol>TLSv1.2</sslProtocol>
+    <mac></mac>
+    <preserveRemoteFileDate>false</preserveRemoteFileDate>
+    <timeoutInterval>0</timeoutInterval>
+  </policy>
+</policies>
+
+========================================================================================================================================================
+/var/iib/interface/guj/neft/inward/properties
+
+#******************************************** Ahemadabad  Bank GJADB ************************************** #
+GJADB_N02_IN=/fns/hd/r/spool/Interfaces/NEFT/INCOMING/N02
+GJADB_N09_IN=/fns/hd/r/spool/Interfaces/RTGS/RTGS-INCOMING-RBI
+GJADB_N10_IN=/fns/hd/r/spool/Interfaces/NEFT/INCOMING/N10-INCOMING
+GJADB_F27_IN=/fns/hd/r/spool/Interfaces/NEFT/INCOMING/OUTGOING-RESPONSE
+GJADB_N04_IN=/fns/hd/r/spool/Interfaces/NEFT/INCOMING/N04
+GJADB_972_IN=/fns/hd/r/spool/Interfaces/NEFT/OUTGOING/SOD
+OUT_GJADB=/fns/hd/r/spool/Interfaces/NEFT/OUTGOING
+N10_OUT_GJADB=/fns/hd/r/spool/Interfaces/NEFT/OUTGOING/N10-OUTGOING
+
+RTGS_GJADB_IN=/fns/hd/r/spool/Interfaces/RTGS/INWARD
+RTGS_OUT_GJADB=/fns/hd/r/spool/Interfaces/RTGS/OUTWARD
+RTGS_OUTRET_GJADB=/fns/hd/r/spool/Interfaces/RTGS/RR42-OUTWARD
+RTGS_OUT_N10_GJADB=/fns/hd/r/spool/Interfaces/RTGS/N10-OUTWARD/
+RTGS_N10_GJADB_IN=/fns/hd/r/spool/Interfaces/RTGS/N10-INCOMING
+
+GJADB_RTGSSOD_IN_IN=/fns/hd/r/spool/Interfaces/RTGS/SOD
+GJADB_RTGSEOD_IN_IN=/fns/hd/r/spool/Interfaces/RTGS/EOD
+
+AppID_GJADB=ADB
+#********************************************* END GJADB *************************************** #
+
+#******************************************** Amreli Bank GJAMR ************************************** #
+GJAMR_N02_IN=/fns/bd/r/spool/Interfaces/NEFT/INCOMING/N02
+GJAMR_N09_IN=/fns/bd/r/spool/Interfaces/RTGS/RTGS-INCOMING-RBI
+GJAMR_N10_IN=/fns/bd/r/spool/Interfaces/NEFT/INCOMING/N10-INCOMING
+GJAMR_F27_IN=/fns/bd/r/spool/Interfaces/NEFT/INCOMING/OUTGOING-RESPONSE
+GJAMR_N04_IN=/fns/bd/r/spool/Interfaces/NEFT/INCOMING/N04
+GJAMR_972_IN=/fns/bd/r/spool/Interfaces/NEFT/OUTGOING/SOD
+OUT_GJAMR=/fns/bd/r/spool/Interfaces/NEFT/OUTGOING
+N10_OUT_GJAMR=/fns/bd/r/spool/Interfaces/NEFT/OUTGOING/N10-OUTGOING
+
+RTGS_GJAMR_IN=/fns/bd/r/spool/Interfaces/RTGS/INWARD
+RTGS_OUT_GJAMR=/fns/bd/r/spool/Interfaces/RTGS/OUTWARD
+RTGS_OUTRET_GJAMR=/fns/bd/r/spool/Interfaces/RTGS/RR42-OUTWARD
+RTGS_OUT_N10_GJAMR=/fns/bd/r/spool/Interfaces/RTGS/N10-OUTWARD/
+RTGS_N10_GJAMR_IN=/fns/bd/r/spool/Interfaces/RTGS/N10-INCOMING
+
+GJAMR_RTGSSOD_IN_IN=/fns/bd/r/spool/Interfaces/RTGS/SOD
+GJAMR_RTGSEOD_IN_IN=/fns/bd/r/spool/Interfaces/RTGS/EOD
+
+AppID_GJAMR=AMR
+#********************************************* END GJAMR *************************************** #
+
+#******************************************** Baroda Bank GJBRD ************************************** #
+GJBRD_N02_IN=/fns/dd/r/spool/Interfaces/NEFT/INCOMING/N02
+GJBRD_N09_IN=/fns/dd/r/spool/Interfaces/RTGS/RTGS-INCOMING-RBI
+GJBRD_N10_IN=/fns/dd/r/spool/Interfaces/NEFT/INCOMING/N10-INCOMING
+GJBRD_F27_IN=/fns/dd/r/spool/Interfaces/NEFT/INCOMING/OUTGOING-RESPONSE
+GJBRD_N04_IN=/fns/dd/r/spool/Interfaces/NEFT/INCOMING/N04
+GJBRD_972_IN=/fns/dd/r/spool/Interfaces/NEFT/OUTGOING/SOD
+OUT_GJBRD=/fns/dd/r/spool/Interfaces/NEFT/OUTGOING
+N10_OUT_GJBRD=/fns/dd/r/spool/Interfaces/NEFT/OUTGOING/N10-OUTGOING
+
+RTGS_GJBRD_IN=/fns/dd/r/spool/Interfaces/RTGS/INWARD
+RTGS_OUT_GJBRD=/fns/dd/r/spool/Interfaces/RTGS/OUTWARD
+RTGS_OUTRET_GJBRD=/fns/dd/r/spool/Interfaces/RTGS/RR42-OUTWARD
+RTGS_OUT_N10_GJBRD=/fns/dd/r/spool/Interfaces/RTGS/N10-OUTWARD/
+RTGS_N10_GJBRD_IN=/fns/dd/r/spool/Interfaces/RTGS/N10-INCOMING
+
+GJBRD_RTGSSOD_IN_IN=/fns/dd/r/spool/Interfaces/RTGS/SOD
+GJBRD_RTGSEOD_IN_IN=/fns/dd/r/spool/Interfaces/RTGS/EOD
+
+AppID_GJBRD=BRD
+#********************************************* END GJBRD *************************************** #
+
+#******************************************** Banaraskantha Bank GJBKD ************************************** #
+GJBKD_N02_IN=/fns/jd/r/spool/Interfaces/NEFT/INCOMING/N02
+GJBKD_N09_IN=/fns/jd/r/spool/Interfaces/RTGS/RTGS-INCOMING-RBI
+GJBKD_N10_IN=/fns/jd/r/spool/Interfaces/NEFT/INCOMING/N10-INCOMING
+GJBKD_F27_IN=/fns/jd/r/spool/Interfaces/NEFT/INCOMING/OUTGOING-RESPONSE
+GJBKD_N04_IN=/fns/jd/r/spool/Interfaces/NEFT/INCOMING/N04
+GJBKD_972_IN=/fns/jd/r/spool/Interfaces/NEFT/OUTGOING/SOD
+OUT_GJBKD=/fns/jd/r/spool/Interfaces/NEFT/OUTGOING
+N10_OUT_GJBKD=/fns/jd/r/spool/Interfaces/NEFT/OUTGOING/N10-OUTGOING
+
+RTGS_GJBKD_IN=/fns/jd/r/spool/Interfaces/RTGS/INWARD
+RTGS_OUT_GJBKD=/fns/jd/r/spool/Interfaces/RTGS/OUTWARD
+RTGS_OUTRET_GJBKD=/fns/jd/r/spool/Interfaces/RTGS/RR42-OUTWARD
+RTGS_OUT_N10_GJBKD=/fns/jd/r/spool/Interfaces/RTGS/N10-OUTWARD/
+RTGS_N10_GJBKD_IN=/fns/jd/r/spool/Interfaces/RTGS/N10-INCOMING
+
+GJBKD_RTGSSOD_IN_IN=/fns/jd/r/spool/Interfaces/RTGS/SOD
+GJBKD_RTGSEOD_IN_IN=/fns/jd/r/spool/Interfaces/RTGS/EOD
+
+AppID_GJBKD=BKD
+#********************************************* END GJBKD *************************************** #
+
+#******************************************** Bhavnagar Bank Config GJBVN ************************************** #
+GJBVN_N02_IN=/fns/bn/r/spool/Interfaces/NEFT/INCOMING/N02
+GJBVN_N09_IN=/fns/bn/r/spool/Interfaces/RTGS/RTGS-INCOMING-RBI
+GJBVN_N10_IN=/fns/bn/r/spool/Interfaces/NEFT/INCOMING/N10-INCOMING
+GJBVN_F27_IN=/fns/bn/r/spool/Interfaces/NEFT/INCOMING/OUTGOING-RESPONSE
+GJBVN_N04_IN=/fns/bn/r/spool/Interfaces/NEFT/INCOMING/N04
+GJBVN_972_IN=/fns/bn/r/spool/Interfaces/NEFT/OUTGOING/SOD
+OUT_GJBVN=/fns/bn/r/spool/Interfaces/NEFT/OUTGOING
+N10_OUT_GJBVN=/fns/bn/r/spool/Interfaces/NEFT/OUTGOING/N10-OUTGOING
+
+RTGS_GJBVN_IN=/fns/bn/r/spool/Interfaces/RTGS/INWARD
+RTGS_OUT_GJBVN=/fns/bn/r/spool/Interfaces/RTGS/OUTWARD
+RTGS_OUTRET_GJBVN=/fns/bn/r/spool/Interfaces/RTGS/RR42-OUTWARD
+RTGS_OUT_N10_GJBVN=/fns/bn/r/spool/Interfaces/RTGS/N10-OUTWARD/
+RTGS_N10_GJBVN_IN=/fns/bn/r/spool/Interfaces/RTGS/N10-INCOMING
+
+GJBVN_RTGSSOD_IN_IN=/fns/bn/r/spool/Interfaces/RTGS/SOD
+GJBVN_RTGSEOD_IN_IN=/fns/bn/r/spool/Interfaces/RTGS/EOD
+
+AppID_GJBVN=BVN
+#********************************************* END GJBVN *************************************** #
+
+#******************************************** Bharuch Bank Config GJBRC ************************************** #
+GJBRC_N02_IN=/fns/gd/r/spool/Interfaces/NEFT/INCOMING/N02
+GJBRC_N09_IN=/fns/gd/r/spool/Interfaces/RTGS/RTGS-INCOMING-RBI
+GJBRC_N10_IN=/fns/gd/r/spool/Interfaces/NEFT/INCOMING/N10-INCOMING
+GJBRC_F27_IN=/fns/gd/r/spool/Interfaces/NEFT/INCOMING/OUTGOING-RESPONSE
+GJBRC_N04_IN=/fns/gd/r/spool/Interfaces/NEFT/INCOMING/N04
+GJBRC_972_IN=/fns/gd/r/spool/Interfaces/NEFT/OUTGOING/SOD
+OUT_GJBRC=/fns/gd/r/spool/Interfaces/NEFT/OUTGOING
+N10_OUT_GJBRC=/fns/gd/r/spool/Interfaces/NEFT/OUTGOING/N10-OUTGOING
+
+RTGS_GJBRC_IN=/fns/gd/r/spool/Interfaces/RTGS/INWARD
+RTGS_OUT_GJBRC=/fns/gd/r/spool/Interfaces/RTGS/OUTWARD
+RTGS_OUTRET_GJBRC=/fns/gd/r/spool/Interfaces/RTGS/RR42-OUTWARD
+RTGS_OUT_N10_GJBRC=/fns/gd/r/spool/Interfaces/RTGS/N10-OUTWARD/
+RTGS_N10_GJBRC_IN=/fns/gd/r/spool/Interfaces/RTGS/N10-INCOMING
+
+GJBRC_RTGSSOD_IN_IN=/fns/gd/r/spool/Interfaces/RTGS/SOD
+GJBRC_RTGSEOD_IN_IN=/fns/gd/r/spool/Interfaces/RTGS/EOD
+
+AppID_GJBRC=BRC
+#********************************************* END GJBRC *************************************** #
+
+#******************************************** Gujrat State Bank GJCBS ************************************** #
+GJCBS_N02_IN=/fns/n1/r/spool/Interfaces/NEFT/INCOMING/N02
+GJCBS_N09_IN=/fns/n1/r/spool/Interfaces/RTGS/RTGS-INCOMING-RBI
+GJCBS_N10_IN=/fns/n1/r/spool/Interfaces/NEFT/INCOMING/N10-INCOMING
+GJCBS_F27_IN=/fns/n1/r/spool/Interfaces/NEFT/INCOMING/OUTGOING-RESPONSE
+GJCBS_N04_IN=/fns/n1/r/spool/Interfaces/NEFT/INCOMING/N04
+GJCBS_972_IN=/fns/n1/r/spool/Interfaces/NEFT/OUTGOING/SOD
+OUT_GJCBS=/fns/n1/r/spool/Interfaces/NEFT/OUTGOING
+N10_OUT_GJCBS=/fns/n1/r/spool/Interfaces/NEFT/OUTGOING/N10-OUTGOING
+
+RTGS_GJCBS_IN=/fns/n1/r/spool/Interfaces/RTGS/INWARD
+RTGS_OUT_GJCBS=/fns/n1/r/spool/Interfaces/RTGS/OUTWARD
+RTGS_OUTRET_GJCBS=/fns/n1/r/spool/Interfaces/RTGS/RR42-OUTWARD
+RTGS_OUT_N10_GJCBS=/fns/n1/r/spool/Interfaces/RTGS/N10-OUTWARD/
+RTGS_N10_GJCBS_IN=/fns/n1/r/spool/Interfaces/RTGS/N10-INCOMING
+
+GJCBS_RTGSSOD_IN_IN=/fns/n1/r/spool/Interfaces/RTGS/SOD
+GJCBS_RTGSEOD_IN_IN=/fns/n1/r/spool/Interfaces/RTGS/EOD
+
+AppID_GJCBS=CBS
+#********************************************* END GJCBS *************************************** #
+
+#******************************************** Jamnagar Bank GJJMN ************************************** #
+GJJMN_N02_IN=/fns/jm/r/spool/Interfaces/NEFT/INCOMING/N02
+GJJMN_N09_IN=/fns/jm/r/spool/Interfaces/RTGS/RTGS-INCOMING-RBI
+GJJMN_N10_IN=/fns/jm/r/spool/Interfaces/NEFT/INCOMING/N10-INCOMING
+GJJMN_F27_IN=/fns/jm/r/spool/Interfaces/NEFT/INCOMING/OUTGOING-RESPONSE
+GJJMN_N04_IN=/fns/jm/r/spool/Interfaces/NEFT/INCOMING/N04
+GJJMN_972_IN=/fns/jm/r/spool/Interfaces/NEFT/OUTGOING/SOD
+OUT_GJJMN=/fns/jm/r/spool/Interfaces/NEFT/OUTGOING
+N10_OUT_GJJMN=/fns/jm/r/spool/Interfaces/NEFT/OUTGOING/N10-OUTGOING
+
+RTGS_GJJMN_IN=/fns/jm/r/spool/Interfaces/RTGS/INWARD
+RTGS_OUT_GJJMN=/fns/jm/r/spool/Interfaces/RTGS/OUTWARD
+RTGS_OUTRET_GJJMN=/fns/jm/r/spool/Interfaces/RTGS/RR42-OUTWARD
+RTGS_OUT_N10_GJJMN=/fns/jm/r/spool/Interfaces/RTGS/N10-OUTWARD/
+RTGS_N10_GJJMN_IN=/fns/jm/r/spool/Interfaces/RTGS/N10-INCOMING
+
+GJJMN_RTGSSOD_IN_IN=/fns/jm/r/spool/Interfaces/RTGS/SOD
+GJJMN_RTGSEOD_IN_IN=/fns/jm/r/spool/Interfaces/RTGS/EOD
+
+AppID_GJJMN=JMN
+#********************************************* END GJJMN *************************************** #
+
+#******************************************** Junagadh Bank GJJND ************************************** #
+GJJND_N02_IN=/fns/qd/r/spool/Interfaces/NEFT/INCOMING/N02
+GJJND_N09_IN=/fns/qd/r/spool/Interfaces/RTGS/RTGS-INCOMING-RBI
+GJJND_N10_IN=/fns/qd/r/spool/Interfaces/NEFT/INCOMING/N10-INCOMING
+GJJND_F27_IN=/fns/qd/r/spool/Interfaces/NEFT/INCOMING/OUTGOING-RESPONSE
+GJJND_N04_IN=/fns/qd/r/spool/Interfaces/NEFT/INCOMING/N04
+GJJND_972_IN=/fns/qd/r/spool/Interfaces/NEFT/OUTGOING/SOD
+OUT_GJJND=/fns/qd/r/spool/Interfaces/NEFT/OUTGOING
+N10_OUT_GJJND=/fns/qd/r/spool/Interfaces/NEFT/OUTGOING/N10-OUTGOING
+
+RTGS_GJJND_IN=/fns/qd/r/spool/Interfaces/RTGS/INWARD
+RTGS_OUT_GJJND=/fns/qd/r/spool/Interfaces/RTGS/OUTWARD
+RTGS_OUTRET_GJJND=/fns/qd/r/spool/Interfaces/RTGS/RR42-OUTWARD
+RTGS_OUT_N10_GJJND=/fns/qd/r/spool/Interfaces/RTGS/N10-OUTWARD/
+RTGS_N10_GJJND_IN=/fns/qd/r/spool/Interfaces/RTGS/N10-INCOMING
+
+GJJND_RTGSSOD_IN_IN=/fns/qd/r/spool/Interfaces/RTGS/SOD
+GJJND_RTGSEOD_IN_IN=/fns/qd/r/spool/Interfaces/RTGS/EOD
+
+AppID_GJJND=JND
+#********************************************* END GJJND *************************************** #
+
+#******************************************** Kodinar Bank GJKDT ************************************** #
+GJKDT_N02_IN=/fns/wd/r/spool/Interfaces/NEFT/INCOMING/N02
+GJKDT_N09_IN=/fns/wd/r/spool/Interfaces/RTGS/RTGS-INCOMING-RBI
+GJKDT_N10_IN=/fns/wd/r/spool/Interfaces/NEFT/INCOMING/N10-INCOMING
+GJKDT_F27_IN=/fns/wd/r/spool/Interfaces/NEFT/INCOMING/OUTGOING-RESPONSE
+GJKDT_N04_IN=/fns/wd/r/spool/Interfaces/NEFT/INCOMING/N04
+GJKDT_972_IN=/fns/wd/r/spool/Interfaces/NEFT/OUTGOING/SOD
+OUT_GJKDT=/fns/wd/r/spool/Interfaces/NEFT/OUTGOING
+N10_OUT_GJKDT=/fns/wd/r/spool/Interfaces/NEFT/OUTGOING/N10-OUTGOING
+
+RTGS_GJKDT_IN=/fns/wd/r/spool/Interfaces/RTGS/INWARD
+RTGS_OUT_GJKDT=/fns/wd/r/spool/Interfaces/RTGS/OUTWARD
+RTGS_OUTRET_GJKDT=/fns/wd/r/spool/Interfaces/RTGS/RR42-OUTWARD
+RTGS_OUT_N10_GJKDT=/fns/wd/r/spool/Interfaces/RTGS/N10-OUTWARD/
+RTGS_N10_GJKDT_IN=/fns/wd/r/spool/Interfaces/RTGS/N10-INCOMING
+
+GJKDT_RTGSSOD_IN_IN=/fns/wd/r/spool/Interfaces/RTGS/SOD
+GJKDT_RTGSEOD_IN_IN=/fns/wd/r/spool/Interfaces/RTGS/EOD
+
+AppID_GJKDT=KDT
+#********************************************* END GJKDT *************************************** #
+
+#******************************************** Katch Bank GJKTC ************************************** #
+GJKTC_N02_IN=/fns/nd/r/spool/Interfaces/NEFT/INCOMING/N02
+GJKTC_N09_IN=/fns/nd/r/spool/Interfaces/RTGS/RTGS-INCOMING-RBI
+GJKTC_N10_IN=/fns/nd/r/spool/Interfaces/NEFT/INCOMING/N10-INCOMING
+GJKTC_F27_IN=/fns/nd/r/spool/Interfaces/NEFT/INCOMING/OUTGOING-RESPONSE
+GJKTC_N04_IN=/fns/nd/r/spool/Interfaces/NEFT/INCOMING/N04
+GJKTC_972_IN=/fns/nd/r/spool/Interfaces/NEFT/OUTGOING/SOD
+OUT_GJKTC=/fns/nd/r/spool/Interfaces/NEFT/OUTGOING
+N10_OUT_GJKTC=/fns/nd/r/spool/Interfaces/NEFT/OUTGOING/N10-OUTGOING
+
+RTGS_GJKTC_IN=/fns/nd/r/spool/Interfaces/RTGS/INWARD
+RTGS_OUT_GJKTC=/fns/nd/r/spool/Interfaces/RTGS/OUTWARD
+RTGS_OUTRET_GJKTC=/fns/nd/r/spool/Interfaces/RTGS/RR42-OUTWARD
+RTGS_OUT_N10_GJKTC=/fns/nd/r/spool/Interfaces/RTGS/N10-OUTWARD/
+RTGS_N10_GJKTC_IN=/fns/nd/r/spool/Interfaces/RTGS/N10-INCOMING
+
+GJKTC_RTGSSOD_IN_IN=/fns/nd/r/spool/Interfaces/RTGS/SOD
+GJKTC_RTGSEOD_IN_IN=/fns/nd/r/spool/Interfaces/RTGS/EOD
+
+AppID_GJKTC=KTC
+#********************************************* END GJKTC *************************************** #
+
+#******************************************** Mehsana Bank GJMSN ************************************** #
+GJMSN_N02_IN=/fns/me/r/spool/Interfaces/NEFT/INCOMING/N02
+GJMSN_N09_IN=/fns/me/r/spool/Interfaces/RTGS/RTGS-INCOMING-RBI
+GJMSN_N10_IN=/fns/me/r/spool/Interfaces/NEFT/INCOMING/N10-INCOMING
+GJMSN_F27_IN=/fns/me/r/spool/Interfaces/NEFT/INCOMING/OUTGOING-RESPONSE
+GJMSN_N04_IN=/fns/me/r/spool/Interfaces/NEFT/INCOMING/N04
+GJMSN_972_IN=/fns/me/r/spool/Interfaces/NEFT/OUTGOING/SOD
+OUT_GJMSN=/fns/me/r/spool/Interfaces/NEFT/OUTGOING
+N10_OUT_GJMSN=/fns/me/r/spool/Interfaces/NEFT/OUTGOING/N10-OUTGOING
+
+RTGS_GJMSN_IN=/fns/me/r/spool/Interfaces/RTGS/INWARD
+RTGS_OUT_GJMSN=/fns/me/r/spool/Interfaces/RTGS/OUTWARD
+RTGS_OUTRET_GJMSN=/fns/me/r/spool/Interfaces/RTGS/RR42-OUTWARD
+RTGS_OUT_N10_GJMSN=/fns/me/r/spool/Interfaces/RTGS/N10-OUTWARD/
+RTGS_N10_GJMSN_IN=/fns/me/r/spool/Interfaces/RTGS/N10-INCOMING
+
+GJMSN_RTGSSOD_IN_IN=/fns/me/r/spool/Interfaces/RTGS/SOD
+GJMSN_RTGSEOD_IN_IN=/fns/me/r/spool/Interfaces/RTGS/EOD
+
+AppID_GJMSN=MSN
+#********************************************* END GJMSN *************************************** #
+
+#******************************************** Panchmahal Bank GJPDC ************************************** #
+GJPDC_N02_IN=/fns/sd/r/spool/Interfaces/NEFT/INCOMING/N02
+GJPDC_N09_IN=/fns/sd/r/spool/Interfaces/RTGS/RTGS-INCOMING-RBI
+GJPDC_N10_IN=/fns/sd/r/spool/Interfaces/NEFT/INCOMING/N10-INCOMING
+GJPDC_F27_IN=/fns/sd/r/spool/Interfaces/NEFT/INCOMING/OUTGOING-RESPONSE
+GJPDC_N04_IN=/fns/sd/r/spool/Interfaces/NEFT/INCOMING/N04
+GJPDC_972_IN=/fns/sd/r/spool/Interfaces/NEFT/OUTGOING/SOD
+OUT_GJPDC=/fns/sd/r/spool/Interfaces/NEFT/OUTGOING
+N10_OUT_GJPDC=/fns/sd/r/spool/Interfaces/NEFT/OUTGOING/N10-OUTGOING
+
+RTGS_GJPDC_IN=/fns/sd/r/spool/Interfaces/RTGS/INWARD
+RTGS_OUT_GJPDC=/fns/sd/r/spool/Interfaces/RTGS/OUTWARD
+RTGS_OUTRET_GJPDC=/fns/sd/r/spool/Interfaces/RTGS/RR42-OUTWARD
+RTGS_OUT_N10_GJPDC=/fns/sd/r/spool/Interfaces/RTGS/N10-OUTWARD/
+RTGS_N10_GJPDC_IN=/fns/sd/r/spool/Interfaces/RTGS/N10-INCOMING
+
+GJPDC_RTGSSOD_IN_IN=/fns/sd/r/spool/Interfaces/RTGS/SOD
+GJPDC_RTGSEOD_IN_IN=/fns/sd/r/spool/Interfaces/RTGS/EOD
+
+AppID_GJPDC=PDC
+#********************************************* END GJPDC *************************************** #
+
+#******************************************** Rajkot Bank GJRJT ************************************** #
+GJRJT_N02_IN=/fns/td/r/spool/Interfaces/NEFT/INCOMING/N02
+GJRJT_N09_IN=/fns/td/r/spool/Interfaces/RTGS/RTGS-INCOMING-RBI
+GJRJT_N10_IN=/fns/td/r/spool/Interfaces/NEFT/INCOMING/N10-INCOMING
+GJRJT_F27_IN=/fns/td/r/spool/Interfaces/NEFT/INCOMING/OUTGOING-RESPONSE
+GJRJT_N04_IN=/fns/td/r/spool/Interfaces/NEFT/INCOMING/N04
+GJRJT_972_IN=/fns/td/r/spool/Interfaces/NEFT/OUTGOING/SOD
+OUT_GJRJT=/fns/td/r/spool/Interfaces/NEFT/OUTGOING
+N10_OUT_GJRJT=/fns/td/r/spool/Interfaces/NEFT/OUTGOING/N10-OUTGOING
+
+RTGS_GJRJT_IN=/fns/td/r/spool/Interfaces/RTGS/INWARD
+RTGS_OUT_GJRJT=/fns/td/r/spool/Interfaces/RTGS/OUTWARD
+RTGS_OUTRET_GJRJT=/fns/td/r/spool/Interfaces/RTGS/RR42-OUTWARD
+RTGS_OUT_N10_GJRJT=/fns/td/r/spool/Interfaces/RTGS/N10-OUTWARD/
+RTGS_N10_GJRJT_IN=/fns/td/r/spool/Interfaces/RTGS/N10-INCOMING
+
+GJRJT_RTGSSOD_IN_IN=/fns/td/r/spool/Interfaces/RTGS/SOD
+GJRJT_RTGSEOD_IN_IN=/fns/td/r/spool/Interfaces/RTGS/EOD
+
+AppID_GJRJT=RJT
+#********************************************* END GJRJT *************************************** #
+
+#******************************************** Surendranagar Bank GJSNR ************************************** #
+GJSNR_N02_IN=/fns/sd/r/spool/Interfaces/NEFT/INCOMING/N02
+GJSNR_N09_IN=/fns/sd/r/spool/Interfaces/RTGS/RTGS-INCOMING-RBI
+GJSNR_N10_IN=/fns/sd/r/spool/Interfaces/NEFT/INCOMING/N10-INCOMING
+GJSNR_F27_IN=/fns/sd/r/spool/Interfaces/NEFT/INCOMING/OUTGOING-RESPONSE
+GJSNR_N04_IN=/fns/sd/r/spool/Interfaces/NEFT/INCOMING/N04
+GJSNR_972_IN=/fns/sd/r/spool/Interfaces/NEFT/OUTGOING/SOD
+OUT_GJSNR=/fns/sd/r/spool/Interfaces/NEFT/OUTGOING
+N10_OUT_GJSNR=/fns/sd/r/spool/Interfaces/NEFT/OUTGOING/N10-OUTGOING
+
+RTGS_GJSNR_IN=/fns/sd/r/spool/Interfaces/RTGS/INWARD
+RTGS_OUT_GJSNR=/fns/sd/r/spool/Interfaces/RTGS/OUTWARD
+RTGS_OUTRET_GJSNR=/fns/sd/r/spool/Interfaces/RTGS/RR42-OUTWARD
+RTGS_OUT_N10_GJSNR=/fns/sd/r/spool/Interfaces/RTGS/N10-OUTWARD/
+RTGS_N10_GJSNR_IN=/fns/sd/r/spool/Interfaces/RTGS/N10-INCOMING
+
+GJSNR_RTGSSOD_IN_IN=/fns/sd/r/spool/Interfaces/RTGS/SOD
+GJSNR_RTGSEOD_IN_IN=/fns/sd/r/spool/Interfaces/RTGS/EOD
+
+AppID_GJSNR=SNR
+#********************************************* END GJSNR *************************************** #
+
+#******************************************** Sabarkantha Bank GJSKB ************************************** #
+GJSKB_N02_IN=/fns/nd/r/spool/Interfaces/NEFT/INCOMING/N02
+GJSKB_N09_IN=/fns/nd/r/spool/Interfaces/RTGS/RTGS-INCOMING-RBI
+GJSKB_N10_IN=/fns/nd/r/spool/Interfaces/NEFT/INCOMING/N10-INCOMING
+GJSKB_F27_IN=/fns/nd/r/spool/Interfaces/NEFT/INCOMING/OUTGOING-RESPONSE
+GJSKB_N04_IN=/fns/nd/r/spool/Interfaces/NEFT/INCOMING/N04
+GJSKB_972_IN=/fns/nd/r/spool/Interfaces/NEFT/OUTGOING/SOD
+OUT_GJSKB=/fns/nd/r/spool/Interfaces/NEFT/OUTGOING
+N10_OUT_GJSKB=/fns/nd/r/spool/Interfaces/NEFT/OUTGOING/N10-OUTGOING
+RTGS_GJSKB_IN=/fns/nd/r/spool/Interfaces/RTGS/INWARD
+RTGS_OUT_GJSKB=/fns/nd/r/spool/Interfaces/RTGS/OUTWARD
+RTGS_OUTRET_GJSKB=/fns/nd/r/spool/Interfaces/RTGS/RR42-OUTWARD
+RTGS_OUT_N10_GJSKB=/fns/nd/r/spool/Interfaces/RTGS/N10-OUTWARD/
+RTGS_N10_GJSKB_IN=/fns/nd/r/spool/Interfaces/RTGS/N10-INCOMING
+
+GJSKB_RTGSSOD_IN_IN=/fns/nd/r/spool/Interfaces/RTGS/SOD
+GJSKB_RTGSEOD_IN_IN=/fns/nd/r/spool/Interfaces/RTGS/EOD
+
+AppID_GJSKB=SKB
+#********************************************* END GJSKB *************************************** #
+
+#******************************************** Valsad Bank iGJVDC ************************************** #
+GJVDC_N02_IN=/fns/vd/r/spool/Interfaces/NEFT/INCOMING/N02
+GJVDC_N09_IN=/fns/vd/r/spool/Interfaces/RTGS/RTGS-INCOMING-RBI
+GJVDC_N10_IN=/fns/vd/r/spool/Interfaces/NEFT/INCOMING/N10-INCOMING
+GJVDC_F27_IN=/fns/vd/r/spool/Interfaces/NEFT/INCOMING/OUTGOING-RESPONSE
+GJVDC_N04_IN=/fns/vd/r/spool/Interfaces/NEFT/INCOMING/N04
+GJVDC_972_IN=/fns/vd/r/spool/Interfaces/NEFT/OUTGOING/SOD
+OUT_GJVDC=/fns/vd/r/spool/Interfaces/NEFT/OUTGOING
+N10_OUT_GJVDC=/fns/vd/r/spool/Interfaces/NEFT/OUTGOING/N10-OUTGOING
+
+RTGS_GJVDC_IN=/fns/vd/r/spool/Interfaces/RTGS/INWARD
+RTGS_OUT_GJVDC=/fns/vd/r/spool/Interfaces/RTGS/OUTWARD
+RTGS_OUTRET_GJVDC=/fns/vd/r/spool/Interfaces/RTGS/RR42-OUTWARD
+RTGS_OUT_N10_GJVDC=/fns/vd/r/spool/Interfaces/RTGS/N10-OUTWARD/
+RTGS_N10_GJVDC_IN=/fns/vd/r/spool/Interfaces/RTGS/N10-INCOMING
+
+GJVDC_RTGSSOD_IN_IN=/fns/vd/r/spool/Interfaces/RTGS/SOD
+GJVDC_RTGSEOD_IN_IN=/fns/vd/r/spool/Interfaces/RTGS/EOD
+
+AppID_GJVDC=VDC
+#********************************************* END GJVDC *************************************** #
+
+#********************************************* FTP Providers *************************************** #
+GJADB_FTP={GUJ_POLICY}:GUJ_ADB_CBS
+GJAMR_FTP={GUJ_POLICY}:GUJR_CBS_110
+GJBRD_FTP={GUJ_POLICY}:GUJ_BRD_CBS
+GJBKD_FTP={GUJ_POLICY}:GUJ_BKD_CBS
+GJBVN_FTP={GUJ_POLICY}:GUJR_CBS_110
+GJBRC_FTP={GUJ_POLICY}:GUJ_BRC_CBS
+GJCBS_FTP={GUJ_POLICY}:GUJ_CBS_CBS
+GJJMN_FTP={GUJ_POLICY}:GUJR_CBS_120
+GJJND_FTP={GUJ_POLICY}:GUJ_JND_CBS
+GJKDT_FTP={GUJ_POLICY}:GUJ_KDT_CBS
+GJKTC_FTP={GUJ_POLICY}:GUJ_KTC_CBS
+GJMSN_FTP={GUJ_POLICY}:GUJR_CBS_120
+GJPDC_FTP={GUJ_POLICY}:GUJ_PDC_CBS
+GJRJT_FTP={GUJ_POLICY}:GUJ_RJT_CBS
+GJSNR_FTP={GUJ_POLICY}:GUJ_SNR_CBS
+GJSKB_FTP={GUJ_POLICY}:GUJ_SKB_CBS
+GJVDC_FTP={GUJ_POLICY}:GUJ_VDC_CBS
+#********************************************* FTP Providers End *************************************** #
+
+#********************* Mail Configuration ***********************************#
+#MailHost=202.162.234.223:25
+#MailFrom=iib_gujarat@cedge.in
+#MailTo=neft_rtgs@cedge.in
+#MailCc=abhijeet.wagh@cedge.in,pradipkumar.trivedi@cedge.in,rakesh.kommi@cedge.in
+
+
+MailUsername=neft_rtgs
+MailPassword=Interface@123
+#********************* End Configuration ************************************#
