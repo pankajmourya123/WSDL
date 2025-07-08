@@ -1,35 +1,77 @@
-BROKER SCHEMA com.cedge.ifsc
-
-DECLARE ns6 NAMESPACE 'urn:iso:std:iso:20022:tech:xsd:admi.004.001.01';
+BROKER SCHEMA com.cedge.gscb.gateway
 
 CREATE FUNCTION initLog4j( IN CONFIG_FILE_NAME CHARACTER )
-RETURNS BOOLEAN
-LANGUAGE JAVA
-EXTERNAL NAME "com.ibm.broker.IAM3.Log4jNode.initLog4j";
-CREATE FUNCTION log4j( IN COMPONENT_NAME CHARACTER,
-IN LEVEL CHARACTER,
-IN TEXT CHARACTER )
-RETURNS BOOLEAN
-LANGUAGE JAVA
-EXTERNAL NAME "com.ibm.broker.IAM3.Log4jNode.log";
-CREATE FUNCTION log4j_1_1( IN COMPONENT_NAME CHARACTER,
-IN LOGGER_NAME CHARACTER,
-IN LEVEL CHARACTER,
-IN TEXT CHARACTER )
-RETURNS BOOLEAN
-LANGUAGE JAVA
-EXTERNAL NAME "com.ibm.broker.IAM3.Log4jNode.log";
+   RETURNS BOOLEAN
+   LANGUAGE JAVA
+   EXTERNAL NAME "com.ibm.broker.IAM3.Log4jNode.initLog4j";
+   CREATE FUNCTION log4j( IN COMPONENT_NAME CHARACTER,
+   IN LEVEL CHARACTER,
+   IN TEXT CHARACTER )
+   RETURNS BOOLEAN
+   LANGUAGE JAVA
+   EXTERNAL NAME "com.ibm.broker.IAM3.Log4jNode.log";
+   CREATE FUNCTION log4j_1_1( IN COMPONENT_NAME CHARACTER,
+   IN LOGGER_NAME CHARACTER,
+   IN LEVEL CHARACTER,
+   IN TEXT CHARACTER )
+   RETURNS BOOLEAN
+   LANGUAGE JAVA
+   EXTERNAL NAME "com.ibm.broker.IAM3.Log4jNode.log";
 
-CREATE COMPUTE MODULE PROCESS_POLIFERATION_PROCESS_CBS
+CREATE COMPUTE MODULE GSCB_INWARD_GATEWAY
 	DECLARE DSNNAME EXTERNAL CHARACTER;
 	DECLARE SCHEMANAME EXTERNAL CHARACTER;
-	DECLARE PROP_LOC EXTERNAL CHARACTER;
+	DECLARE BGL_MST_TABLENAME EXTERNAL CHARACTER;
+	DECLARE BGL_TRAN_TABLENAME EXTERNAL CHARACTER;
+	
 	CREATE FUNCTION Main() RETURNS BOOLEAN
-	BEGIN
-		-- CALL CopyMessageHeaders();
-		   DECLARE bool BOOLEAN;
-		   SET bool = CopyEntireMessage();
-		   RETURN bool;
+	BEGIN		
+		
+		DECLARE rc,flag BOOLEAN;
+		SET Environment.CBSFAIL ='N'; 
+	 	CALL initLog4j('/var/iib/interface/guj/neft/inward/properties/log4j/guj_neft_rgts_log4j.xml') INTO rc;
+	--	CALL initLog4j('/var/iib/interface/gscb/properties/log4j/gscb_recon_log4j.xml') INTO rc;
+		CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','------------------------------------START----------------------------------') INTO rc;
+		CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','Request string received from GSCB') INTO rc;
+			
+		CALL CopyMessageHeaders();
+		SET flag = CopyEntireMessage(); 
+		
+	--	IF NOT flag THEN
+	--		RETURN FALSE;
+	--	END IF;
+				
+		DECLARE QueueName CHARACTER '';
+		SET QueueName = InputRoot.MQMD.SourceQueue;
+		IF Environment.CBSFAIL ='Y' THEN 
+			IF QueueName = 'RECON.INCOMING.REQUEST' THEN
+				PROPAGATE TO TERMINAL 'out2' DELETE NONE;
+				RETURN FALSE;				
+			ELSE
+				PROPAGATE TO TERMINAL 'out3' DELETE NONE;
+				RETURN FALSE;
+			END IF;
+		ELSEIF Environment.CBSFAIL ='TO' THEN	
+			RETURN FALSE;
+			
+		ELSE
+			IF QueueName = 'RECON.INCOMING.REQUEST' THEN
+				PROPAGATE TO TERMINAL 'out' DELETE NONE;
+				RETURN FALSE;				
+			ELSE
+				PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+				RETURN FALSE;
+			END IF;
+		END IF; 
+--		IF QueueName = 'RECON.INCOMING.REQUEST' THEN
+--			PROPAGATE TO TERMINAL 'out' DELETE NONE;
+--			RETURN FALSE;				
+--		ELSE
+--			PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+--			RETURN FALSE;
+--		END IF;
+		
+--		RETURN TRUE;	
 	END;
 
 	CREATE PROCEDURE CopyMessageHeaders() BEGIN
@@ -42,71 +84,227 @@ CREATE COMPUTE MODULE PROCESS_POLIFERATION_PROCESS_CBS
 		END WHILE;
 	END;
 
-	CREATE PROCEDURE CopyEntireMessage() RETURNS BOOLEAN  BEGIN
--- 		SET OutputRoot = InputRoot;
-		DECLARE rc BOOLEAN;
-		CALL initLog4j('/var/iib/interface/ifsc/inward/properties/log4j/ifsc_inward.xml') INTO rc;
-		CALL log4j_1_1('IFSC_POLIFERATION_PROCESS', 'IFSC_IN', 'WARN','---------------START---------------') INTO rc;
-		DECLARE AdmiRef004 REFERENCE TO InputRoot.MRM.ns6:SysEvtNtfnV01; 
-		DECLARE evntDesc  CHARACTER '';
-		DECLARE fileLoc,ftpProvider,key,bankName CHARACTER;
-		DECLARE BankName_List ROW;
-		SET evntDesc = AdmiRef004.ns6:EvtInf.ns6:EvtDesc;	
-		IF STARTSWITH(evntDesc,'*|') OR STARTSWITH(evntDesc,'+|') OR STARTSWITH(evntDesc,'-|') THEN
-				DECLARE i INTEGER 1;
-				WHILE i <> 14 DO
-				SET Environment.evntDesc.data[i] = SUBSTRING(evntDesc BEFORE '|');
-				IF TRIM(Environment.evntDesc.data[i]) = '' THEN
-					SET Environment.evntDesc.data[i] = evntDesc;
-					END IF;
-					SET evntDesc = SUBSTRING(evntDesc AFTER '|');
-					SET i = i + 1;
-			 	END WHILE;
-				CALL log4j_1_1('IFSC_POLIFERATION_PROCESS', 'IFSC_IN', 'WARN','The Message is an IFSC Proliferation Message') INTO rc;				
+	CREATE PROCEDURE CopyEntireMessage() RETURNS BOOLEAN
+	BEGIN
+		DECLARE rc BOOLEAN;	
+		DECLARE wholeMsgBlob BLOB;
+		
+		SET wholeMsgBlob = ASBITSTREAM(InputRoot.BLOB.BLOB,InputRoot.Properties.Encoding, InputRoot.Properties.CodedCharSetId);
+	 	DECLARE wholeMsgChar CHAR CAST(wholeMsgBlob AS CHAR CCSID InputRoot.Properties.CodedCharSetId);
+	 	
+	 	DECLARE utrNumber,requestString CHARACTER ;
+	 	SET utrNumber = SUBSTRING(wholeMsgChar BEFORE '/');
+	 	SET requestString = SUBSTRING(wholeMsgChar AFTER '/');
+	 		
+	 		
+	 	DECLARE count INTEGER ;
+	 	SET count = LENGTH(requestString);
+	 				
+	 	IF CONTAINS(requestString,'1075') AND count = 1080 THEN
+	 	
+		 	DECLARE txnNum,branchNumber,tranDate,tellerNumber,transactionCode,settlementAccount,
+		 		amount,bglAccount,responseCode,bankName,transactionType, creationTime,status, amt, cbsCurrentAc CHARACTER ;
+		 	DECLARE DB_Details ROW;
+		 	
+		 	IF CONTAINS(utrNumber,'-') THEN
+		 		SET txnNum = SUBSTRING(utrNumber BEFORE '-');
+		 		SET amt = SUBSTRING(utrNumber AFTER '-');
+		 	ELSE
+		 		SET txnNum = utrNumber;
+		 	END IF;
+		 	
+	    --	SET txnNum = SUBSTRING(utrNumber BEFORE '-');
+  			CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','Transcation reference number:- '|| txnNum) INTO rc;
+  			CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','Amount received from GSCB:- '|| amt) INTO rc;
+	  			
+	    	SET tranDate = CAST(CURRENT_TIMESTAMP AS DATE FORMAT 'dd-MMM-yy');
+    		SET creationTime = CAST(CURRENT_TIMESTAMP AS TIMESTAMP FORMAT 'dd-MMM-yy HH:mm:ss');
+    		SET	branchNumber =  SUBSTRING(requestString FROM 43 FOR 5);
+	 		SET tellerNumber = SUBSTRING(requestString FROM 51 FOR 7);
+	 		SET transactionCode = SUBSTRING(requestString FROM 58 FOR 6);
+	 		SET settlementAccount = SUBSTRING(requestString FROM 134 FOR 17);
+			SET cbsCurrentAc = SUBSTRING(requestString FROM 134 FOR 16);
+				
+	 		DECLARE amount1, amount2,amount3 CHARACTER;
+	 		SET amount1 = SUBSTRING(requestString FROM 169 FOR 14);	
+	 		SET amount2 = SUBSTRING(requestString FROM 183 FOR 3);
+	 		SET amount3 = amount1||'.'||amount2;
+	 		SET amount = TRIM(LEADING '0' FROM amount3);
+	 		
+	 		SET bglAccount = SUBSTRING(requestString FROM 208 FOR 17);
+
+
+			DECLARE responseString CHARACTER;
+			CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','Request string send to CBS:- ' || requestString) INTO rc;
+			CALL SendToCBS(requestString,responseString);
+	 		SET OutputLocalEnvironment.Destination.String.CBS.Response = responseString;
+
+			DECLARE response CHARACTER;
+			SET response = OutputLocalEnvironment.Destination.String.CBS.Response;	
+	    
+	    	
+			IF response IS NULL OR LENGTH(response) = 0 THEN
+				SET response = 'NA';
+			END IF;
+		
+			CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','Response string received from CBS:- ' || response ) INTO rc;	
+	 		SET responseCode = TRIM(SUBSTRING(responseString FROM 135 FOR 66)); 
+	 	
+	 	
+	 		IF responseCode IS NULL OR LENGTH(responseCode) = 0 OR TRIM(responseCode) = '' THEN
+ 				SET responseCode = 'NA';
+ 			END IF;
+				
+	 		--Check for Error Codes (0545,0112,0148,0184) And NA scenario ; To be retried with CBS till successful
+	 		DECLARE Response_Error_No CHARACTER SUBSTRING(responseCode FROM 6 FOR 4);
+		
+	 		IF Response_Error_No IN ('0545','0112','0148','0184') OR responseCode = 'NA' THEN
+	 			DECLARE RetryCount INTEGER 0;
+	 			CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','Message with UTR:'||txnNum||' is being Retried and re-sent to CBS for Processing') INTO rc;
+	 			
+	 			X :WHILE RetryCount < 3 DO
+	 				CALL SendToCBS(requestString,responseString);
+	 				SET OutputLocalEnvironment.Destination.String.CBS.Response = responseString;
+	 				SET response = OutputLocalEnvironment.Destination.String.CBS.Response;		
+	 				SET responseCode = TRIM(SUBSTRING(responseString FROM 135 FOR 66));
+	 				
+	 				IF responseCode IS NULL OR LENGTH(responseCode) = 0 OR TRIM(responseCode) = '' THEN
+	 					SET responseCode = 'NA';
+	 				END IF;	
+	 							
+	 				SET Response_Error_No = SUBSTRING(responseCode FROM 6 FOR 4);
+	 				
+	 				IF Response_Error_No IN ('0545','0112','0148','0184') OR responseCode = 'NA' THEN
+	 				ELSE
+	 					LEAVE X;
+	 				END IF;
+	 				
+	 				SET RetryCount = RetryCount + 1;
+	 			END WHILE;
+	 			
+	 			SET transactionType = 'GL TO Deposit';
+	 			SET status = 'A';
+	 		
+	 		
+	 			DECLARE Qry CHARACTER 'SELECT A.BANKNAME FROM '||SCHEMANAME||'.'||BGL_MST_TABLENAME||' A WHERE A.CURRENT_ACCOUNT = ? ';			
+		 		SET DB_Details.A[] = PASSTHRU(Qry TO Database.{DSNNAME} VALUES(settlementAccount));
+			
+				DECLARE bankDetailsRef REFERENCE TO DB_Details;
+	    		MOVE bankDetailsRef FIRSTCHILD;
+	    		DECLARE tempDbRef REFERENCE TO bankDetailsRef;
+	    	
+	    		SET bankName = tempDbRef.BANKNAME ;	
+	    		
+ 				IF bankName IS NULL THEN
+					SET bankName = 'NA';		
 				END IF;
-				
-			DECLARE Bank_Name_Qry CHARACTER 'SELECT A.BANKNAME FROM '||SCHEMANAME||'.BANKNAME A';
-			SET BankName_List.List[] = PASSTHRU(Bank_Name_Qry TO Database.{DSNNAME});			
-			DECLARE BankName_Cursor REFERENCE TO BankName_List;
-			MOVE BankName_Cursor FIRSTCHILD;
-			DECLARE CurDate CHARACTER CAST(CURRENT_DATE AS CHAR format 'YYYYMMdd');
-			
-			WHILE LASTMOVE(BankName_Cursor) DO
-				SET bankName = TRIM(FIELDVALUE(BankName_Cursor.BANKNAME));
-			
-				SET key = bankName;
-				CALL getProp(PROP_LOC, key, fileLoc, ftpProvider , bankName);
-				
-				SET Environment.SeqHeader = PASSTHRU('select SEQ_IFSCBANKNAME.nextval FROM dual' TO Database.{DSNNAME});
-				SET Environment.SeqHeader_Char = CAST(CAST(Environment.SeqHeader.NEXTVAL AS INTEGER) AS CHARACTER);
-				
-				SET OutputLocalEnvironment.Destination.File.Remote.Server = ftpProvider;
-				SET OutputLocalEnvironment.Destination.File.Remote.ServerDirectory = fileLoc;
-				SET OutputLocalEnvironment.Destination.File.Name = 'RBIIFSC_'||CurDate||'_'||Environment.SeqHeader_Char||'.txt';
-				
-				CALL log4j_1_1('IFSC_POLIFERATION_PROCESS', 'IFSC_IN', 'WARN','FTP Details for :'||bankName) INTO rc;
-				CALL log4j_1_1('IFSC_POLIFERATION_PROCESS', 'IFSC_IN', 'WARN','FileName : '||OutputLocalEnvironment.Destination.File.Name) INTO rc;
-				CALL log4j_1_1('IFSC_POLIFERATION_PROCESS', 'IFSC_IN', 'WARN','FTP Provider Name : '||ftpProvider) INTO rc;
-				CALL log4j_1_1('IFSC_POLIFERATION_PROCESS', 'IFSC_IN', 'WARN','Remote Location Diretory Name : '||fileLoc) INTO rc;
-				
-				--Creating output message for IFSC proliferation
-
-				SET OutputRoot.DFDL.IFSC_PROLFRTN.PROLIFERTAION_TYPE = Environment.evntDesc.data[1];
-				SET OutputRoot.DFDL.IFSC_PROLFRTN.IFSC_CODE = Environment.evntDesc.data[2];
-				SET OutputRoot.DFDL.IFSC_PROLFRTN.BANK_NAME = Environment.evntDesc.data[5];
-				SET OutputRoot.DFDL.IFSC_PROLFRTN.BRANCH_NAME = Environment.evntDesc.data[6];
-				SET OutputRoot.DFDL.IFSC_PROLFRTN.ADDRS = Environment.evntDesc.data[8];
-				SET OutputRoot.DFDL.IFSC_PROLFRTN.DISTRICT = Environment.evntDesc.data[10];
-
-				PROPAGATE TO TERMINAL 0 DELETE NONE;	
-				MOVE BankName_Cursor NEXTSIBLING;
-			END WHILE;
-
-				
-			CALL log4j_1_1('IFSC_POLIFERATION_PROCESS', 'IFSC_IN', 'WARN','---------------END---------------') INTO rc;
-	RETURN FALSE;			
+						
+				CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','Bank name:'|| bankName) INTO rc;	
+	 		 	IF CONTAINS(response,'80000 O.K.') THEN
+					SET response = '0000 O.K. '||'SUCCESSFUL';
+	 				INSERT INTO Database.GSCB_BGL_TRAN (BANKNAME,TRAN_CODE,TRAN_DATE,CURRENT_ACCOUNT,AMOUNT,REQ_STRING,RES_STRING,RESPONSE_CODE,CREATION_TIME,STATUS,TELLER_NUMBER,BGL_ACCOUNT,TRANSACTION_TYPE,TRAN_REF_NO) 
+	 				VALUES (bankName,transactionCode,tranDate, settlementAccount,amount, requestString,response,responseCode,creationTime,status,tellerNumber,bglAccount,transactionType,txnNum);
+					CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','Data inserted into GSCB_BGL_TRAN table') INTO rc;
+					SET responseString = utrNumber||'/'||response;
+					DECLARE CbsResponse BLOB;
+					SET CbsResponse = CAST(responseString AS BLOB CCSID InputRoot.Properties.CodedCharSetId);	
+					SET OutputRoot.BLOB.BLOB = CbsResponse;
+					CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','Response code send to GSCB:- ' || responseString) INTO rc;		
+					CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','-------------------------------------END------------------------------------') INTO rc;
+				ELSE
+					SET response = responseCode;
+					SET Environment.CBSFAIL ='Y'; 	
+					CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','Transaction '||utrNumber||' failed even after retrying with response: '||response) INTO rc;
+					CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','Message is being sent to input queue again for retrying.') INTO rc;
+					CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','-------------------------------------END------------------------------------') INTO rc;
+					SET OutputRoot.BLOB.BLOB = InputRoot.BLOB.BLOB;	
+				END IF;
+	 			
+	 		---Change by yash
+	 		--- no retry in time out case
+	 		ELSEIF Response_Error_No = '0546' THEN
+	 			
+			SET OutputRoot.BLOB.BLOB = InputRoot.BLOB.BLOB;
+			PROPAGATE TO LABEL 'timeout' DELETE NONE;	
+			CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','Connection Timeout, Request String Send To RECON_TIMOUT_FAIL_QUEUE:- ') INTO rc;		
+			CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','-------------------------------------END------------------------------------') INTO rc;
+		 	SET Environment.CBSFAIL ='TO';			
+ 
+	 	ELSE
+	 	IF CONTAINS(response,'80000 O.K.') THEN
+			SET response = '0000 O.K. '||'SUCCESSFUL';
+	 		INSERT INTO Database.GSCB_BGL_TRAN (BANKNAME,TRAN_CODE,TRAN_DATE,CURRENT_ACCOUNT,AMOUNT,REQ_STRING,RES_STRING,RESPONSE_CODE,CREATION_TIME,STATUS,TELLER_NUMBER,BGL_ACCOUNT,TRANSACTION_TYPE,TRAN_REF_NO) 
+	 		VALUES (bankName,transactionCode,tranDate, settlementAccount,amount, requestString,response,responseCode,creationTime,status,tellerNumber,bglAccount,transactionType,txnNum);
+			CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','Data inserted into GSCB_BGL_TRAN table') INTO rc;
+			SET responseString = utrNumber||'/'||response;
+			DECLARE CbsResponse BLOB;
+			SET CbsResponse = CAST(responseString AS BLOB CCSID InputRoot.Properties.CodedCharSetId);	
+			SET OutputRoot.BLOB.BLOB = CbsResponse;
+			CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','Response code send to GSCB:- ' || responseString) INTO rc;		
+			CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','-------------------------------------END------------------------------------') INTO rc;
+	 	ELSE
+	 	 	SET responseString = utrNumber||'/'||response;
+	 	 	DECLARE CbsResponse BLOB;
+			SET CbsResponse = CAST(responseString AS BLOB CCSID InputRoot.Properties.CodedCharSetId);	
+			SET OutputRoot.BLOB.BLOB = CbsResponse;
+			CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','Response code send to GSCB:- ' || responseString) INTO rc;		
+			CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','-------------------------------------END------------------------------------') INTO rc;
+	 	END IF;
+	 END IF;			 		
+--			SET responseString = utrNumber||'/'||response;
+--			
+--			DECLARE CbsResponse BLOB;
+--			SET CbsResponse = CAST(responseString AS BLOB CCSID InputRoot.Properties.CodedCharSetId);
+--				
+--			SET OutputRoot.BLOB.BLOB = CbsResponse;
+--			CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','Response code send to GSCB:- ' || responseString) INTO rc;		
+--			CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','-------------------------------------END------------------------------------') INTO rc;
+							
+	ELSE
+		
+	 		DECLARE txnNum, amt, count1 CHARACTER ;
+		 	SET count1 = LENGTH(requestString);
+		 	
+	 		IF CONTAINS(utrNumber,'-') THEN
+		 		SET txnNum = SUBSTRING(utrNumber BEFORE '-');
+		 		SET amt = SUBSTRING(utrNumber AFTER '-');
+		 	ELSE
+		 		SET txnNum = utrNumber;
+		 	END IF;
+	 		
+ 		--	SET txnNum = SUBSTRING(utrNumber BEFORE '-');
+  			CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','Transcation reference number:- '|| txnNum) INTO rc;
+  			CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','Amount received from GSCB:- '|| amt) INTO rc;
+ 			
+ 			DECLARE wrongString CHARACTER;
+ 			SET wrongString = utrNumber||'/WRONG STRING';
+ 			
+ 			DECLARE failString BLOB;
+ 			SET failString = CAST(wrongString AS BLOB CCSID InputRoot.Properties.CodedCharSetId);
+ 			
+ 			SET OutputRoot.BLOB.BLOB = failString;
+ 			CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','String length received:- '|| count1) INTO rc;
+ 			CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','Wrong string received from GSCB:- ' || requestString) INTO rc;
+			CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','Response code send to GSCB:- ' || wrongString) INTO rc;
+			CALL log4j_1_1('GSCB_RECON', 'GSCB_RECON_IN', 'WARN','-------------------------------------END------------------------------------') INTO rc;
+	 	END IF;
+	 	RETURN TRUE;
+	 	
 	END;
-	CREATE PROCEDURE  getProp( IN P1 CHARACTER, IN P2 CHARACTER, INOUT P3 CHARACTER,INOUT P4 CHARACTER , IN P5 CHARACTER)
- 	LANGUAGE JAVA 
- 	EXTERNAL NAME "com.cedge.ifsc.IFSC_INWARD_LoadProperties.getProperties";	
+
+	CREATE PROCEDURE CharToJulianDate (IN DD CHARACTER,IN MM CHARACTER,IN CCYY CHARACTER ) RETURNS INTEGER
+	BEGIN
+		DECLARE CCYYMMDD DATE; 
+		DECLARE CCYY0101 DATE; 
+		DECLARE DaysThisYear INTEGER; 	
+		SET CCYYMMDD = CAST((CCYY || '-' || MM || '-' || DD) AS DATE); 
+		SET CCYY0101 = CAST(('1900-01-01') AS DATE); 	
+		SET DaysThisYear = CAST((CCYYMMDD - CCYY0101) DAY AS INTEGER) + 1; 
+		RETURN DaysThisYear; 
+	END;
+
+	CREATE PROCEDURE SendToCBS(IN P1 CHARACTER, INOUT P2 CHARACTER )
+	LANGUAGE JAVA
+	EXTERNAL NAME "com.cedge.gscb.gateway.ClientDemo.hitStringToCBS";
 END MODULE;
+
