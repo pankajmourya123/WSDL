@@ -1,3 +1,62 @@
+[iibadmin@dciibprod-uat workflow]$ vi PANKAJ2_UFM_TRAIL.xml
+[iibadmin@dciibprod-uat workflow]$ vi PANKAJ_UFM_TRAIL.xml
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE UFM_Workflow SYSTEM "UFM_Workflow.dtd">
+<UFM_Workflow>
+    <Global onerrorfail="N">
+        <LogFile>/sysout/ufm/PANKAJ_UFM_TRAIL.log</LogFile>
+        <Log4JFile>/opt/mqm/Capitalware/UFM/IIB_log4j.properties</Log4JFile>
+    </Global>
+    <Actions>
+        <Watch pollinterval="5">
+            <!--********************************START*******************************************************-->
+            <WatchItem type="D">
+                <Directory sendonstartup="Y">/opt/mqm/Capitalware/UFM/workflow/new</Directory>
+                <Extension>TXT</Extension>
+                <Actions>
+                    <MQSend delete="N" format="S">
+                        <File>${WATCH_FOUND_FILE}</File>
+                        <MQ>
+                            <MQFile>IIB_MQFILE.xml</MQFile>
+                            <QueueName>AJAY.OUT</QueueName>
+                            <BackOutQName>AJ_OUT</BackOutQName>
+                        </MQ>
+                        <Archive todir="/opt/mqm/Capitalware/UFM/workflow/new3"/>
+                        <Remote>
+                            <Directory>/opt/mqm/Capitalware/UFM/workflow/new2</Directory>
+                        </Remote>
+                    </MQSend>
+                </Actions>
+            </WatchItem>
+            <!--********************************END*******************************************************-->
+
+
+        </Watch>
+    </Actions>
+</UFM_Workflow>
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE UFM_Workflow SYSTEM "UFM_Workflow.dtd">
+<UFM_Workflow>
+  <Global onerrorfail="N">
+    <LogFile>/sysout/ufm/PANKAJ2.log</LogFile>
+    <Log4JFile>/opt/mqm/Capitalware/UFM/IIB_log4j.properties</Log4JFile>
+    <OnError>
+      <SendEmail xmlfile="CBS183_WB_SENDEMAIL_DONE.xml" />
+    </OnError>
+  </Global>
+
+  <Actions>
+
+    <MQReceive getwithconvert="N" run="D">
+      <MQ>
+        <MQFile>IIB_MQFILE.xml</MQFile>
+        <QueueName>AJAY.OUT</QueueName>
+        <BackOutQName>AJ_OUT</BackOutQName>
+      </MQ>
+    </MQReceive>
+
+  </Actions>
+</UFM_Workflow>
 
 
 CREATE COMPUTE MODULE SET_MP1
