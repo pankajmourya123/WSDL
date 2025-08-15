@@ -1,299 +1,35 @@
-[iibadmin@dciibprod-uat workflow]$ vi PANKAJ2_UFM_TRAIL.xml
-[iibadmin@dciibprod-uat workflow]$ vi PANKAJ_UFM_TRAIL.xml
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE UFM_Workflow SYSTEM "UFM_Workflow.dtd">
-<UFM_Workflow>
-    <Global onerrorfail="N">
-        <LogFile>/sysout/ufm/PANKAJ_UFM_TRAIL.log</LogFile>
-        <Log4JFile>/opt/mqm/Capitalware/UFM/IIB_log4j.properties</Log4JFile>
-    </Global>
-    <Actions>
-        <Watch pollinterval="5">
-            <!--********************************START*******************************************************-->
-            <WatchItem type="D">
-                <Directory sendonstartup="Y">/opt/mqm/Capitalware/UFM/workflow/new</Directory>
-                <Extension>TXT</Extension>
-                <Actions>
-                    <MQSend delete="N" format="S">
-                        <File>${WATCH_FOUND_FILE}</File>
-                        <MQ>
-                            <MQFile>IIB_MQFILE.xml</MQFile>
-                            <QueueName>AJAY.OUT</QueueName>
-                            <BackOutQName>AJ_OUT</BackOutQName>
-                        </MQ>
-                        <Archive todir="/opt/mqm/Capitalware/UFM/workflow/new3"/>
-                        <Remote>
-                            <Directory>/opt/mqm/Capitalware/UFM/workflow/new2</Directory>
-                        </Remote>
-                    </MQSend>
-                </Actions>
-            </WatchItem>
-            <!--********************************END*******************************************************-->
+
+Node: IIBPRODBRKR
+Server: PANKAJ
+Application: APP1
+Message flows:Flow1
+
+User-defined properties
+User-defined property
+Local UDP: FLAG	N	
 
 
-        </Watch>
-    </Actions>
-</UFM_Workflow>
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE UFM_Workflow SYSTEM "UFM_Workflow.dtd">
-<UFM_Workflow>
-  <Global onerrorfail="N">
-    <LogFile>/sysout/ufm/PANKAJ2.log</LogFile>
-    <Log4JFile>/opt/mqm/Capitalware/UFM/IIB_log4j.properties</Log4JFile>
-    <OnError>
-      <SendEmail xmlfile="CBS183_WB_SENDEMAIL_DONE.xml" />
-    </OnError>
-  </Global>
 
-  <Actions>
+1. Login to the server: 10.32.46.11:4414
 
-    <MQReceive getwithconvert="N" run="D">
-      <MQ>
-        <MQFile>IIB_MQFILE.xml</MQFile>
-        <QueueName>AJAY.OUT</QueueName>
-        <BackOutQName>AJ_OUT</BackOutQName>
-      </MQ>
-    </MQReceive>
+2. Click on "APGVSERVER".
 
-  </Actions>
-</UFM_Workflow>
+3. Navigate to the "APGVB_NEFT_INWARD" application.
 
+4. Click on "APGVB_INWARD_GATEWAY".
 
-CREATE COMPUTE MODULE SET_MP1
-	CREATE FUNCTION Main() RETURNS BOOLEAN
-	BEGIN
-	
-		DECLARE rc BOOLEAN;
-	--	CALL CopyMessageHeaders();
-	--	CALL CopyEntireMessage();
-		CALL log4j_1_1('MP_NEFT_RECON_PULL', 'MP_NEFT_RECON_PULL', 'WARN','----------------------START-----------------------') INTO rc;
-		CALL log4j_1_1('MP_NEFT_RECON_PULL', 'MP_NEFT_RECON_PULL', 'WARN','File received for MP state') INTO rc;
-		SET OutputRoot = InputRoot;
-		SET Environment.TRANTYPE='NEFT';
-		SET Environment.state = 'MP';
-		RETURN TRUE;
-	
-	END;
+5. Go to the "Layout & Properties" section.
 
-	CREATE PROCEDURE CopyMessageHeaders() BEGIN
-		DECLARE I INTEGER 1;
-		DECLARE J INTEGER;
-		SET J = CARDINALITY(InputRoot.*[]);
-		WHILE I < J DO
-			SET OutputRoot.*[I] = InputRoot.*[I];
-			SET I = I + 1;
-		END WHILE;
-	END;
+6. Locate the property: localUDP:file_flag
 
-	CREATE PROCEDURE CopyEntireMessage() BEGIN
-		
+   Current values:
+   - Persisted Value: Y
+   - Override: Y
+   - Active Value: Y
 
-	END;
-END MODULE;
+7. Change the override value of the user-defined property "localUDP:file_flag" from Y to N.
 
-CREATE COMPUTE MODULE PULL_NEFT_Compute
-	CREATE FUNCTION Main() RETURNS BOOLEAN
-	BEGIN		
-		-- CALL CopyMessageHeaders();
-		 CALL CopyEntireMessage();
-
-		RETURN TRUE;
-	END;
-
-	CREATE PROCEDURE CopyMessageHeaders() BEGIN
-		DECLARE I INTEGER 1;
-		DECLARE J INTEGER;
-		SET J = CARDINALITY(InputRoot.*[]);
-		WHILE I < J DO
-			SET OutputRoot.*[I] = InputRoot.*[I];
-			SET I = I + 1;
-		END WHILE;
-	END;
-
-	CREATE PROCEDURE CopyEntireMessage() BEGIN
-		SET OutputRoot = InputRoot;
-		DECLARE rc BOOLEAN;
-		DECLARE state, fileName CHARACTER;
-			
-		SET Environment.FileName = InputLocalEnvironment.File.Name;
-		SET fileName = InputLocalEnvironment.File.Name;
-		SET state = Environment.state;
-		DECLARE TRANTYPE CHARACTER  Environment.TRANTYPE;
-		CALL log4j_1_1('MP_RECON_PULL', 'MP_NEFT_RECON_PULL', 'PULL','fine name is '||fileName) INTO rc;
-		SET OutputLocalEnvironment.Destination.File.Name = fileName||'.done';
-		SET OutputLocalEnvironment.Destination.File.Remote.Server = '{MP_POLICY_PROJECT}:MP_SFTP';
-       
-             IF state = 'MP' THEN
-			    SET OutputLocalEnvironment.Destination.File.Remote.ServerDirectory = '/wbifin/APPLICATION_DATA/COOPERATIVE_NEFT/DCCB/MP/RECON_FILES/OUT';	
-		                                                                             
-		     ELSE
-			    SET OutputLocalEnvironment.Destination.File.Remote.ServerDirectory = '/wbifin/APPLICATION_DATA/COOPERATIVE_NEFT/DCCB/CG/RECON_FILES/OUT';
-		     END IF;
-             
-		CALL log4j_1_1('MP_RECON_PULL', 'MP_NEFT_RECON_PULL', 'PULL','writing .done file to CBI server') INTO rc;
-		
-		END;
-END MODULE;
-CREATE COMPUTE MODULE CBS_FILE_GENERATION
-	
-	DECLARE PROP_LOC EXTERNAL CHARACTER;	
-	DECLARE DSN EXTERNAL CHARACTER;
-	
-	
-	CREATE FUNCTION Main() RETURNS BOOLEAN
-	BEGIN
-		-- CALL CopyMessageHeaders();
-		 CALL CopyEntireMessage();
-		RETURN TRUE;
-	END;
-
-	CREATE PROCEDURE CopyMessageHeaders() BEGIN
-		DECLARE I INTEGER 1;
-		DECLARE J INTEGER;
-		SET J = CARDINALITY(InputRoot.*[]);
-		WHILE I < J DO
-			SET OutputRoot.*[I] = InputRoot.*[I];
-			SET I = I + 1;
-		END WHILE;
-	END;
-
-	CREATE PROCEDURE CopyEntireMessage() BEGIN
-		DECLARE rc BOOLEAN;
-		CALL log4j_1_1('MP_RECON_PULL', 'MP_NEFT_RECON_PULL', 'WARN','.done file successfully written to CBI server') INTO rc;
-		SET OutputRoot = InputRoot;
-		
-		DECLARE fileName , outfileName , ifsc , bank , key , FtpProvider , fileLoc CHARACTER;
-		DECLARE seq INTEGER;
-		DECLARE BankDB,updateDB ROW; 
-		
-		
-		SET fileName=Environment.FileName;	
-		SET ifsc = SUBSTRING(fileName FROM 25 FOR 11);
-		CALL log4j_1_1('MP_RECON_PULL', 'MP_NEFT_RECON_PULL', 'WARN','ifsc in file name is '||ifsc) INTO rc;	
-			
-			
-			
-		
-		SET BankDB.R[] = PASSTHRU( 'select BANKNAME,NEFT_SEQ_NUM from BANK_SEQUENCE where ifsc = ?' TO Database.{DSN} VALUES (ifsc));
-		SET bank = BankDB.R[1].BANKNAME;
-		SET key = bank;
-		CALL log4j_1_1('MP_RECON_PULL', 'MP_NEFT_RECON_PULL', 'WARN','bank name is '||bank) INTO rc;
-		CALL getProp( PROP_LOC,key,FtpProvider,fileLoc); 
-		
-		
-		
-		
-		SET seq = BankDB.R[1].NEFT_SEQ_NUM;
-		
-		
-		
-		SET seq = seq + 1;
-		
-		IF  seq > 999 THEN
-			SET seq = '0';
-		END IF;
-		
-		SET updateDB.R[] = PASSTHRU('update BANK_SEQUENCE set NEFT_SEQ_NUM = ? where ifsc = ?' TO Database.{DSN} VALUES (seq,ifsc));
-		
-		DECLARE flag CHARACTER;
-		SET flag = CAST(seq AS CHARACTER);
-		
-	
-	
-		DECLARE flagLen INTEGER;
-		SET flagLen = LENGTH(flag);
-		WHILE flagLen < 3 DO
-			SET flag = '0' || flag;
-			SET flagLen = flagLen + 1;
-		END WHILE;
-		
-		---ADDED FOR CTRL M ---------------------------------------------------------------------------------------------
-		DECLARE CRLF ,CR,LF CHARACTER ;
-		SET CRLF  = CAST(X'0D0A' AS CHARACTER CCSID 1208);
-		SET CR    = CAST(X'0D' AS CHARACTER CCSID 1208);
-		SET LF    = CAST(X'0A' AS CHARACTER CCSID 1208);
-		DECLARE wholeMsgBlob BLOB;
-		SET wholeMsgBlob=InputRoot.BLOB.BLOB;
-		DECLARE wholeMsgChar CHAR CAST(wholeMsgBlob AS CHAR CCSID InputRoot.Properties.CodedCharSetId);
-		SET wholeMsgChar = REPLACE (wholeMsgChar ,CRLF ,LF);
-		DECLARE wholeMsgBlob1 BLOB CAST(wholeMsgChar AS BLOB CCSID InputRoot.Properties.CodedCharSetId);
-		SET OutputRoot.BLOB.BLOB = wholeMsgBlob1 ;
-				--------END-------------------------------------------------------------------------------------------------------
-        
-        	SET outfileName = 'RON_'||'99922_'||CAST(CURRENT_DATE AS CHARACTER FORMAT 'ddMMyyyy')||'_'||CAST(CURRENT_TIME AS CHARACTER FORMAT 'HHmmss')||'_01'||'.txt';
-       
-		SET OutputLocalEnvironment.Destination.File.Name = outfileName; 
-		SET OutputLocalEnvironment.Destination.File.Remote.Server = FtpProvider;
-		SET OutputLocalEnvironment.Destination.File.Remote.ServerDirectory = fileLoc;
-		CALL log4j_1_1('MP_RECON_PULL', 'MP_NEFT_RECON_PULL', 'WARN','file name is '||outfileName) INTO rc;
-		CALL log4j_1_1('MP_RECON_PULL', 'MP_NEFT_RECON_PULL', 'WARN','ftp provider is '||FtpProvider) INTO rc;
-		CALL log4j_1_1('MP_RECON_PULL', 'MP_NEFT_RECON_PULL', 'WARN','cbs location is '||fileLoc) INTO rc;
-				
-		CALL log4j_1_1('MP_RECON_PULL', 'MP_NEFT_RECON_PULL', 'WARN','Writing file to CBS') INTO rc;				
-	END;
-	
-		CREATE PROCEDURE getProp( IN P1 CHARACTER , IN P2 CHARACTER , INOUT P3 CHARACTER , INOUT P4 CHARACTER )
- 		LANGUAGE JAVA
- 		EXTERNAL NAME "com.cedge.mp.neft.recon.READ_PROPERTY_FILE.getCBSProperties";
-END MODULE;
-
-
-CREATE COMPUTE MODULE END_LOG
-	CREATE FUNCTION Main() RETURNS BOOLEAN
-	BEGIN
-		-- CALL CopyMessageHeaders();
-		-- CALL CopyEntireMessage();
-		DECLARE rc BOOLEAN;
-		CALL log4j_1_1('MP_RECON_PULL', 'MP_NEFT_RECON_PULL', 'WARN','NEFT RECON File successfully written to CBS') INTO rc;
-		CALL log4j_1_1('MP_RECON_PULL', 'MP_NEFT_RECON_PULL', 'WARN','--------------------END------------------') INTO rc;
-		RETURN FALSE;
-	END;
-
-	CREATE PROCEDURE CopyMessageHeaders() BEGIN
-		DECLARE I INTEGER 1;
-		DECLARE J INTEGER;
-		SET J = CARDINALITY(InputRoot.*[]);
-		WHILE I < J DO
-			SET OutputRoot.*[I] = InputRoot.*[I];
-			SET I = I + 1;
-		END WHILE;
-	END;
-
-	CREATE PROCEDURE CopyEntireMessage() BEGIN
-		SET OutputRoot = InputRoot;
-	END;
-END MODULE;
-
-
-CREATE COMPUTE MODULE SET_CG1
-	CREATE FUNCTION Main() RETURNS BOOLEAN
-	BEGIN
-		DECLARE rc BOOLEAN;
-		-- CALL CopyMessageHeaders();
-		--CALL CopyEntireMessage();
-		CALL log4j_1_1('MP_NEFT_RECON_PULL', 'MP_NEFT_RECON_PULL', 'WARN','----------------------START-----------------------') INTO rc;
-		CALL log4j_1_1('MP_NEFT_RECON_PULL', 'MP_NEFT_RECON_PULL', 'WARN','File received for CG state') INTO rc;
-     	SET OutputRoot = InputRoot;
-	    SET Environment.TRANTYPE='NEFT';
-	    
-	    SET Environment.state = 'CG';
-		
-		RETURN TRUE;
-	END;
-
-	CREATE PROCEDURE CopyMessageHeaders() BEGIN
-		DECLARE I INTEGER 1;
-		DECLARE J INTEGER;
-		SET J = CARDINALITY(InputRoot.*[]);
-		WHILE I < J DO
-			SET OutputRoot.*[I] = InputRoot.*[I];
-			SET I = I + 1;
-		END WHILE;
-	END;
-
-	CREATE PROCEDURE CopyEntireMessage() BEGIN
-		
-
-	END;
-END MODULE;
-
+8. After the change, the values should be:
+   - Persisted Value: Y
+   - Override: N
+   - Active Value: N
