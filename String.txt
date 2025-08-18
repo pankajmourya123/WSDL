@@ -1,0 +1,799 @@
+BROKER SCHEMA com.cedge.rmgb.neft.string
+/*
+--> Validate bank name with BankName Table 
+--> Create shared variable and apply some logics to make a expected values like Amount,UTR,
+-->  
+*/ --00000099509999225
+---00000028002000182
+----00000028002000217
+---10.43.3.19
+--7125
+--10.43.4.15
+--3009
+
+CREATE COMPUTE MODULE STRING_Compute
+	DECLARE NEFT_IN_PAYLOAD_TABLE EXTERNAL CHARACTER '';
+	DECLARE SCHEMANAME EXTERNAL CHARACTER '';
+	DECLARE DSNNAME EXTERNAL CHARACTER '';
+	DECLARE CONFIG EXTERNAL CHARACTER '';
+	DECLARE NEFT_IN_TABLENAME EXTERNAL CHARACTER '';
+	DECLARE BANKNAME_TABLE EXTERNAL CHARACTER '' ;
+	DECLARE TRAN_CODE EXTERNAL CHARACTER '';
+--	DECLARE BGL CHARACTER '';
+	DECLARE BRANCH_NO EXTERNAL CHARACTER '';
+	DECLARE OTH_SCH EXTERNAL CHARACTER '';
+	DECLARE i SHARED INTEGER 1;
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE rc BOOLEAN;
+		DECLARE bool BOOLEAN;
+		CALL CopyMessageHeaders();
+		SET bool = CopyEntireMessage();
+		RETURN bool;
+	END;
+
+	CREATE PROCEDURE CopyMessageHeaders() BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.*[]);
+		WHILE I < J DO
+			SET OutputRoot.*[I] = InputRoot.*[I];
+			SET I = I + 1;
+		END WHILE;
+	END;
+----------------------------------------------------------------------------------------------------------------------------------------------------	
+	CREATE PROCEDURE CopyEntireMessage ( ) RETURNS BOOLEAN BEGIN
+--		DECLARE whiteSpace CONSTANT CHARACTER CAST( X'090D0A20' AS CHAR CCSID 1208);
+		DECLARE rc BOOLEAN ;
+		DECLARE check ROW;
+		DECLARE txnNum,rcvr_Ifsc,sndr_Ifsc,new_Rcvr_Ifsc,utr,EndToEndId,datechar,bankName1,bankName,msgType,trancode,CreDt,CreTm,BGL,txid CHARACTER ;
+		DECLARE trandate DATE ; 
+		DECLARE headerRef REFERENCE TO InputRoot.XMLNSC.RequestPayload.[1];
+		DECLARE bodyRef REFERENCE TO InputRoot.XMLNSC.RequestPayload.[2];
+		MOVE bodyRef LASTCHILD;
+		DECLARE ref_record REFERENCE TO bodyRef.*:CdtTrfTxInf;
+		
+		CALL initLog4j(CONFIG) INTO rc;
+	    
+	    SET bankName1 = SUBSTRING(headerRef.*:To.*:FIId.*:FinInstnId.*:ClrSysMmbId.*:MmbId FROM 1 FOR 4);
+	    SET msgType = headerRef.*:MsgDefIdr;
+		SET datechar = SUBSTRING (bodyRef.*:GrpHdr.*:CreDtTm BEFORE 'T');
+		SET trandate = CAST (datechar AS DATE FORMAT 'yyyy-MM-dd');
+		SET CreDt = REPLACE(datechar,'-','');
+		SET CreTm = REPLACE(SUBSTRING(bodyRef.*:GrpHdr.*:CreDtTm AFTER 'T'),':','');
+		SET txnNum = COALESCE(bodyRef.*:GrpHdr.*:MsgId,bodyRef.*:AppHdr.*:BizMsgIdr);
+		
+		CALL log4j_1_1('Bank_Validation_&_Env_Map', 'RMGB_NEFT_IN_STRING', 'INFO','---------------------------- START -------------------------') INTO rc;
+		CALL log4j_1_1('Bank_Validation_&_Env_Map', 'RMGB_NEFT_IN_STRING', 'INFO','Message Belogs To '||msgType||' Category') INTO rc;
+		CALL log4j_1_1('Bank_Validation_&_Env_Map', 'RMGB_NEFT_IN_STRING', 'INFO','Transaction Reference Number : '||txnNum) INTO rc;
+		
+--		SET check.R[] = PASSTHRU('SELECT RETRY_COUNT FROM NEFT_IN_PAYLOAD WHERE TXN_REF_NUM = ?' TO Database.{DSNNAME} VALUES(txnNum));
+	 	WHILE LASTMOVE (ref_record) DO
+	 	CREATE FIELD Environment.Variables ;
+	 	DECLARE envref REFERENCE TO  Environment.Variables;
+	 	SET EndToEndId = REPLACE(FIELDVALUE(ref_record.*:PmtId.*:EndToEndId),'/XUTR/','');
+		SET txid = ref_record.*:PmtId.*:TxId;
+		SET utr = EndToEndId ;
+	 	SET check.R[] = PASSTHRU('SELECT RETRY_COUNT FROM NEFT_IN_PAYLOAD WHERE UTR = ?' TO Database.{DSNNAME} VALUES(utr));	
+	 	CALL log4j_1_1('Bank_Validation_&_Env_Map', 'RMGB_NEFT_IN_STRING', 'INFO','UTR : '||utr) INTO rc; 
+	 		
+		--------------------------------------------------------Checking Payload Table Retry Count-------------------------------------------------------------------
+		IF check.R[1].RETRY_COUNT >= 0 THEN
+			DECLARE retryCount INTEGER ;
+			SET retryCount = check.R[1].RETRY_COUNT+1 ;
+			DECLARE DB_Details ROW;	
+			DECLARE Qry CHARACTER ;						
+			SET Qry =  'UPDATE '||SCHEMANAME||'.'||NEFT_IN_PAYLOAD_TABLE|| ' A SET A.LAST_MOD_TIME = ? , A.RETRY_COUNT = ? WHERE A.UTR = ? ' ;
+			SET DB_Details.A[] = PASSTHRU (Qry TO Database.{DSNNAME} VALUES(CURRENT_TIMESTAMP ,retryCount ,utr));				
+			CALL log4j_1_1('Bank_Validation_&_Env_Map', 'RMGB_NEFT_IN_STRING', 'INFO','UTR : '||utr||' is Updated into NEFT_IN-PAYLOAD') INTO rc;			
+		ELSE
+			DECLARE wholeMsgBlob BLOB ASBITSTREAM(InputRoot.XMLNSC, InputRoot.Properties.Encoding, InputRoot.Properties.CodedCharSetId );
+	 		DECLARE wholeMsgChar CHAR CAST(wholeMsgBlob AS CHAR CCSID OutputRoot.Properties.CodedCharSetId);
+	 		INSERT INTO Database.{DSNNAME}.{SCHEMANAME}.NEFT_IN_PAYLOAD (PAYLOAD,CREATION_TIME,LAST_MOD_TIME,STATUS,RETRY_COUNT,TXN_REF_NUM,UTR,TRAN_DATE,BANK_NAME) 
+	 		VALUES (wholeMsgChar,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP,'0', 0,txnNum,utr,trandate,bankName1);	
+	 		CALL log4j_1_1('Bank_Validation_&_Env_Map', 'RMGB_NEFT_IN_STRING', 'INFO','UTR : '||utr||' is inserted into NEFT_IN_PAYLOAD') INTO rc;
+		END IF;
+		    --------------------------------------------------------Checking Payload Table Retry Count-------------------------------------------------------------------
+
+			-------------------------------------------IDENTIFYING BANK---------------------------------------------------------------------------------------			
+			SET rcvr_Ifsc = ref_record.*:CdtrAgt.*:FinInstnId.*:ClrSysMmbId.*:MmbId;
+	 		SET sndr_Ifsc = ref_record.*:DbtrAgt.*:FinInstnId.*:ClrSysMmbId.*:MmbId;
+	 		CALL log4j_1_1('Bank_Validation_&_Env_Map', 'RMGB_NEFT_IN_STRING', 'INFO','Sender IFSC : '||COALESCE(sndr_Ifsc,'NOT FOUND')) INTO rc;
+			CALL log4j_1_1('Bank_Validation_&_Env_Map', 'RMGB_NEFT_IN_STRING', 'INFO','Receiver IFSC :'||COALESCE(rcvr_Ifsc,'NOT FOUND')) INTO rc; 
+	 		SET new_Rcvr_Ifsc = SUBSTRING (rcvr_Ifsc FROM 1 FOR 4) ||'%';
+	 		DECLARE validate ROW ;
+	 		SET check.B[] = PASSTHRU('SELECT BANKNAME FROM BANKNAME WHERE IFSC_CODE  LIKE  ?'TO Database.{DSNNAME} VALUES(new_Rcvr_Ifsc));
+	 		SET bankName = check.B.BANKNAME;
+	 		SET envref.RequestPayload.bankName = bankName;
+	 		CALL log4j_1_1('Bank_Validation_&_Env_Map', 'RMGB_NEFT_IN_STRING', 'INFO','Bank Name: '||COALESCE(bankName,'NOT FOUND.')) INTO rc;
+	 		
+	 		IF bankName IS NULL THEN
+	 			SET OutputRoot = InputRoot;
+	 			CALL log4j_1_1('Bank_Validation_&_Env_Map', 'RMGB_NEFT_IN_STRING', 'INFO','Transaction is sent to : NON.RMGB.IN.TXN.Q') INTO rc;
+	 			PROPAGATE TO TERMINAL 1 DELETE NONE;
+	 		ELSE 
+	 			DECLARE A INTEGER ;
+	 			DECLARE Benef_account_no,Remitterr_account_no,Amount,sender_reciver_information,benef_address,remiter_address,benef_details,cust_address,batch,Cdtr CHARACTER '';
+	 			
+	 			-------------------------------------******Benef_account_no and Remitterr_account_no********------------------------------------------------
+				SET Benef_account_no =ref_record.*:CdtrAcct.*:Id.*:Othr.*:Id;
+				IF LENGTH(Benef_account_no)<17 THEN
+					SET A = 17-LENGTH(Benef_account_no);
+					SET Benef_account_no = REPLICATE('0',A)||Benef_account_no;
+				END IF;
+				
+				SET Remitterr_account_no =ref_record.*:DbtrAcct.*:Id.*:Othr.*:Id;
+				IF LENGTH(Remitterr_account_no)<17 THEN
+					SET A = 17-LENGTH(Remitterr_account_no);
+					SET Remitterr_account_no = REPLICATE('0',A)||Remitterr_account_no;
+				END IF;
+				-------------------------------------******Benef_account_no and Remitterr_account_no********------------------------------------------------
+
+--				SET sender_IFSC =ref_record.*:DbtrAgt.*:FinInstnId.*:ClrSysMmbId.*:MmbId;
+--				SET receiver_IFSC =ref_record.*:CdtrAgt.*:FinInstnId.*:ClrSysMmbId.*:MmbId;
+				
+				------------------------------------------------------******AMOUNT*****-------------------------------------------------------			
+				SET Amount = FIELDVALUE(ref_record.*:IntrBkSttlmAmt);
+				DECLARE decima CHARACTER SUBSTRING(Amount AFTER '.');
+				IF LENGTH(decima)<3 THEN
+					SET A = 3-LENGTH(decima);
+					SET decima = decima||REPLICATE('0',A);
+				END IF;
+				SET Amount = SUBSTRING(Amount BEFORE '.');
+				IF LENGTH(Amount)<14 THEN
+					SET A = 14-LENGTH(Amount);
+					SET Amount = REPLICATE('0',A)||Amount;
+				END IF;
+				SET Amount = Amount||decima;
+				------------------------------------------------------******AMOUNT*****-------------------------------------------------------
+				
+				------------------------------------------------*****benef_details*****-------------------------------------------------------------------------------------
+				SET benef_details = ref_record.*:Cdtr.*:Nm;
+--				SET benef_details =ref_record.*:Dbtr.*:Nm;
+				IF LENGTH(benef_details)<=33 THEN
+					SET A = 33-LENGTH(benef_details);
+					SET benef_details = benef_details||REPLICATE(' ',A);
+				ELSE
+					SET benef_details = SUBSTRING(benef_details FROM 1 FOR 33);
+				END IF;
+				------------------------------------------------*****benef_details*****-------------------------------------------------------------------------------------
+				
+				-----------------------------------------------****benef_address****--------------------------------------------------------------------------------
+				SET benef_address = COALESCE (ref_record.*:Dbtr.*:Nm,' ') || COALESCE(ref_record.*:Cdtr.*:PstlAdr.*:AdrLine,' ');
+--				IF  benef_address IS NULL THEN
+--				SET	benef_address = ' ';
+--				SET benef_address =COALESCE (ref_record.*:Dbtr.*:Nm,' ');
+--				END IF;
+				IF LENGTH(benef_address)<=100  THEN
+					SET A = 100-LENGTH(benef_address);
+					SET benef_address = benef_address||REPLICATE(' ',A);
+				ELSE
+					SET benef_address = SUBSTRING(benef_address FROM 1 FOR 100);
+				END IF;
+				-----------------------------------------------****benef_address****--------------------------------------------------------------------------------
+				
+				-----------------------------------------------****cust_address****-----------------------------------------------------------------------------------
+				SET cust_address ='/'|| COALESCE (Benef_account_no,' ')||' '|| COALESCE (ref_record.*:Cdtr.*:Nm,' ') || COALESCE (ref_record.*:Dbtr.*:PstlAdr.*:AdrLine[1],' ') ||COALESCE (ref_record.*:Dbtr.*:PstlAdr.*:AdrLine[2],' ') ;
+				IF  cust_address IS NULL THEN
+				SET	cust_address = ' ';
+				END IF;
+				IF LENGTH(cust_address)<=100 THEN
+					SET A = 100-LENGTH(cust_address);
+					SET cust_address = cust_address||REPLICATE(' ',A);
+				ELSE
+					SET cust_address = SUBSTRING(cust_address FROM 1 FOR 100);
+				END IF;
+				-----------------------------------------------****cust_address****---------------------------------------------------------------------------
+				
+				---------------------------------------------------------Batch_No-----------------------------------------------------------------------------
+				SET batch = ref_record.*:RmtInf.*:Ustrd[1]; 
+				CALL log4j_1_1('Bank_Validation_&_Env_Map', 'RMGB_NEFT_IN_STRING', 'INFO','BATCH :'||TRIM('BatchId:' FROM batch)) INTO rc;
+				--------------------------------------------------------*****ENVIRONMENT_VARIABLE*****--------------------------------------------------------
+				---------------------------------------------------------------UAT------------------------------------------------------------------------------
+--				CASE i
+--					
+--				WHEN  1 THEN
+--					SET BGL ='00000095995090008';
+--				WHEN  2 THEN
+--					SET BGL ='00000095995090019';
+--				WHEN  3 THEN
+--					SET BGL ='00000095995090020';
+--				WHEN  4 THEN
+--					SET BGL ='00000095995090031';	
+--				WHEN  5 THEN
+--					SET BGL ='00000095995090042';
+--				WHEN  6 THEN
+--					SET BGL ='00000095995090064';	
+--				WHEN  7 THEN
+--					SET BGL ='00000095995090075';
+--				WHEN  8 THEN
+--					SET BGL ='00000095995090086';
+--				WHEN  9 THEN
+--					SET BGL ='00000095995090097';
+--				WHEN 10 THEN
+--					SET BGL ='00000095995090075';
+--				ELSE
+--					SET BGL ='00000095995090053';
+--					SET i = 0;
+--				END CASE;
+
+--00000099509999225
+--00000099539999220
+--00000099549999228
+--00000099559999226
+--00000099569999225
+--00000099579999223
+--00000099589999221
+--00000099599999229
+--00000099649999225
+--00000099659999223
+---------------------------------------------------------------UAT------------------------------------------------------------------------------
+---------------------------------------------------------------PROD------------------------------------------------------------------------------
+
+				CASE i
+					
+				WHEN  1 THEN
+					SET BGL ='00000099509999225';
+				WHEN  2 THEN
+					SET BGL ='00000099539999220';
+				WHEN  3 THEN
+					SET BGL ='00000099549999228';
+				WHEN  4 THEN
+					SET BGL ='00000099559999226';	
+				WHEN  5 THEN
+					SET BGL ='00000099569999225';
+				WHEN  6 THEN
+					SET BGL ='00000099579999223';		
+				WHEN  7 THEN
+					SET BGL ='00000099589999221';
+				WHEN  8 THEN
+					SET BGL ='00000099599999229';
+				WHEN  9 THEN
+					SET BGL ='00000099649999225';
+--				WHEN 10 THEN
+--				--	SET BGL ='00000094189999222';
+				ELSE
+					SET BGL ='00000099659999223';
+					SET i = 0;
+				END CASE;
+---------------------------------------------------------------PROD------------------------------------------------------------------------------				
+				CALL log4j_1_1('Bank_Validation_&_Env_Map', 'RMGB_NEFT_IN_STRING', 'INFO','BGL ACCOUNT: '||COALESCE(BGL,'NOT FOUND.')) INTO rc;
+				CALL log4j_1_1('Bank_Validation_&_Env_Map', 'RMGB_NEFT_IN_STRING', 'INFO','shared count '||CAST(i AS CHARACTER)) INTO rc;
+				SET	i = i+1 ;
+				---------------------------------------------------------------------------------------------------------------------------------------------
+				----------------------------------------------------UTR-----------------------------------------------------------------------------------
+				IF LENGTH(utr)<16 THEN
+					SET A = 16-LENGTH(utr);
+					SET utr = REPLICATE(' ',A)||utr;
+				END IF;
+				IF LENGTH(utr)<=22 THEN
+					SET A = 22-LENGTH(utr);
+					SET utr = utr||REPLICATE(' ',A);
+				ELSE
+					SET utr = SUBSTRING(utr FROM 1 FOR 22);
+				END IF;
+				---------------------------------------------------------sender_reciver_information------------------------------------------------------------------------------
+				SET sender_reciver_information = COALESCE(ref_record.*:RmtInf.*:Ustrd[2],' '); 
+				SET sender_reciver_information = '          '||txid||' '||sender_reciver_information||sender_reciver_information||sender_reciver_information;
+				IF LENGTH(sender_reciver_information)<=117 THEN
+					SET A = 117-LENGTH(sender_reciver_information);
+					SET sender_reciver_information = sender_reciver_information||REPLICATE(' ',A);
+				ELSE
+					SET sender_reciver_information = SUBSTRING(sender_reciver_information FROM 1 FOR 117);
+				END IF;
+				----------------------------------------------------sender_reciver_information-----------------------------------------------------------------------------------
+--				SET Cdtr = ref_record.*:Cdtr.*:Nm;
+				-----------------------------------------------------------------Cdtr----------------------------------------------------------------------
+				SET Cdtr = COALESCE(ref_record.*:Cdtr.*:PstlAdr.AdrLine,' ');
+				IF LENGTH(Cdtr)<=100 THEN
+					SET A = 100-LENGTH(Cdtr);
+					SET Cdtr = Cdtr||REPLICATE(' ',A);
+				ELSE
+					SET Cdtr = SUBSTRING(Cdtr FROM 1 FOR 100);
+				END IF;
+				-----------------------------------------------------------------Cdtr----------------------------------------------------------------------
+				-----------------------------------------------FOR-MAPPING------------------------------------------------------------------------------------
+				SET envref.RequestPayload.amount=Amount;
+				SET envref.RequestPayload.sender_ifsc =sndr_Ifsc;
+				SET envref.RequestPayload.reciver_ifsc=rcvr_Ifsc;
+				SET envref.RequestPayload.ben_Acc_no =Benef_account_no;
+				SET envref.RequestPayload.time =CreTm;				
+				SET envref.RequestPayload.utr =utr;
+				SET envref.RequestPayload.date =CreDt;
+				SET envref.RequestPayload.Tran_code =TRAN_CODE;
+				SET envref.RequestPayload.bgl = BGL;
+				SET	envref.RequestPayload.rem_Acc_no = Remitterr_account_no;
+				SET envref.RequestPayload.narration='NEFT '||sndr_Ifsc||' '||utr; ---prod
+				SET envref.RequestPayload.branch_no =BRANCH_NO;
+				SET envref.RequestPayload.oth_sch =OTH_SCH;
+				SET envref.RequestPayload.benef_details =benef_details;
+				SET envref.RequestPayload.cust_address = cust_address;
+				SET envref.RequestPayload.benef_address = benef_address;
+				SET envref.RequestPayload.pay_details = Cdtr;--5560 BenfCustomer_Address --LEI
+				SET envref.RequestPayload.sender_reciver_information =sender_reciver_information; --7495
+				-----------------------------------------------FOR-MAPPING-----------------------------------------------------------------------------------------
+
+				-------------------------------------------------DB-INSERT-----------------------------------------------------------------------------------------
+				SET envref.RequestPayload.remiter_Name = ref_record.*:Dbtr.*:Nm;
+				SET envref.RequestPayload.benfi_Name= ref_record.*:Cdtr.*:Nm;
+--				SET sender_reciver_information= ref_record.*:InstrForCdtrAgt.*:InstrInf;
+				SET envref.RequestPayload.msgid= bodyRef.*:GrpHdr.*:MsgId;
+				SET envref.RequestPayload.batch =TRIM('BatchId:' FROM batch);
+				SET envref.RequestPayload.EndToEndId = TRIM(EndToEndId);
+				SET envref.RequestPayload.txid=txid;
+				----------------------------------------------TO CREATE N02 MESSAGE----------------------------------------------------------------------------------------------
+				
+				SET envref.N02.amount =TRANSLATE(FIELDVALUE(ref_record.*:IntrBkSttlmAmt) ,'.', ',');
+				SET envref.N02.CreDtTm=bodyRef.*:GrpHdr.*:CreDtTm;
+				SET envref.N02.msgid =headerRef.*:BizMsgIdr;
+				SET envref.N02.head_reciver_ifsc =headerRef.*:To.*:FIId.*:FinInstnId.*:ClrSysMmbId.*:MmbId;
+				SET envref.N02.head_sender_ifsc =headerRef.*:Fr.*:FIId.*:FinInstnId.*:ClrSysMmbId.*:MmbId;
+				SET envref.N02.extnlctgryppscd =ref_record.*:PmtTpInf.*:CtgyPurp.*:Cd;
+				SET envref.N02.dbtracctpcd =ref_record.*:DbtrAcct.*:Tp.*:Cd;
+--				SET envref.N02.debtraccid =ref_record.*:CdtrAcct.*:Id.*:Othr.*:Id;
+				SET envref.N02.debtraccid =ref_record.*:DbtrAcct.*:Id.*:Othr.*:Id;
+--				SET envref.N02.debtrnm =ref_record.*:Dbtr.*:Nm; -----> duplicate
+				SET envref.N02.ctctdtls =COALESCE(ref_record.*:Dbtr.*:CtctDtls.*:MobNb,ref_record.*:Dbtr.*:CtctDtls.*:EmailAdr);
+				SET envref.N02.instrinfo =ref_record.*:InstrForCdtrAgt.*:InstrInf; 
+				SET envref.N02.cdtracctpcd =ref_record.*:CdtrAcct.*:Tp.*:Cd;
+--				SET envref.N02.crdtacaccothrid =ref_record.*:DbtrAcct.*:Id.*:Othr.*:Id;
+				SET envref.N02.crdtacaccothrid =ref_record.*:CdtrAcct.*:Id.*:Othr.*:Id;
+--				SET envref.N02.cdtrnm =ref_record.*:Cdtr.*:Nm;-----> duplicate
+				SET envref.N02.pstladr =ref_record.*:Cdtr.*:PstlAdr.*:AdrLine;
+				SET envref.N02.ustrd =ref_record.*:RmtInf.*:Ustrd[2];
+				SET envref.N02.lei = ref_record.*:Dbtr.*:Id.*:OrgId.*:LEI;
+				SET envref.N02.UTR = TRIM(REPLACE(FIELDVALUE(ref_record.*:PmtId.*:EndToEndId),'/XUTR/','')); 
+				-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--	 			SET OutputLocalEnvironment.Destination.TCPIP.Output.Hostname = '10.43.4.15'	;
+--				SET OutputLocalEnvironment.TCPIP.Receive.Hostname ='10.43.4.15'	;	
+--				SET OutputLocalEnvironment.Destination.TCPIP.Output.Port ='3009';
+--				SET OutputLocalEnvironment.TCPIP.Receive.Port ='3009';
+						
+	 			 PROPAGATE TO TERMINAL 'out' DELETE NONE ;
+	 			CALL log4j_1_1('Bank_Validation_&_Env_Map', 'RMGB_NEFT_IN_STRING', 'INFO','----------------------------********NEXT TRANSACTION******** -------------------------') INTO rc;
+	 		END IF;
+			MOVE ref_record NEXTSIBLING;
+	 	END WHILE;
+	 	CALL log4j_1_1('Bank_Validation_&_Env_Map', 'RMGB_NEFT_IN_STRING', 'INFO','------------------------------------------END ----------------------------------') INTO rc;
+	 	RETURN FALSE;
+	END;
+	
+
+END MODULE;
+
+
+CREATE FUNCTION initLog4j( IN CONFIG_FILE_NAME CHARACTER )
+RETURNS BOOLEAN
+LANGUAGE JAVA
+EXTERNAL NAME "com.ibm.broker.IAM3.Log4jNode.initLog4j";
+
+CREATE FUNCTION log4j_1_1( IN COMPONENT_NAME CHARACTER,
+IN LOGGER_NAME CHARACTER,
+IN LEVEL CHARACTER,
+IN TEXT CHARACTER )
+RETURNS BOOLEAN
+LANGUAGE JAVA
+EXTERNAL NAME "com.ibm.broker.IAM3.Log4jNode.log";
+
+
+ 
+BROKER SCHEMA com.cedge.rmgb.neft.string
+
+
+CREATE COMPUTE MODULE DB_INSERT
+	DECLARE DSNNAME EXTERNAL CHARACTER '';
+	DECLARE SCHEMANAME EXTERNAL CHARACTER '';
+	DECLARE NEFT_IN_TABLENAME EXTERNAL CHARACTER '';
+	DECLARE c SHARED INTEGER 1;
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		 CALL CopyMessageHeaders();
+		 CALL CopyEntireMessage();
+		RETURN TRUE;
+	END;
+
+	CREATE PROCEDURE CopyMessageHeaders() BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.*[]);
+		WHILE I < J DO
+			SET OutputRoot.*[I] = InputRoot.*[I];
+			SET I = I + 1;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE CopyEntireMessage() BEGIN
+	DECLARE rc BOOLEAN ;	
+	DECLARE ref REFERENCE TO InputRoot.DFDL ;
+	DECLARE stringblob BLOB ;
+	DECLARE DB_Count ROW ;
+	DECLARE stringchar, Qry,tranRefNo CHARACTER;
+--	DECLARE CRLF CHARACTER CAST('0x0D0A' AS CHARACTER CCSID 1208);
+	SET stringblob = ASBITSTREAM (ref CCSID InputRoot.Properties.CodedCharSetId ENCODING InputRoot.Properties.Encoding);
+	SET stringchar = CAST(stringblob AS CHARACTER CCSID InputRoot.Properties.CodedCharSetId ENCODING InputRoot.Properties.Encoding);
+	CALL log4j_1_1('DB_INSERT', 'RMGB_NEFT_IN_STRING', 'INFO','CBS_Request_String :'||stringchar) INTO rc;
+	
+	---------------------------------------------------------------------------------------------------------------------------------------------------------
+	SET tranRefNo = TRIM(Environment.Variables.RequestPayload.EndToEndId);
+	------------------------------------------------------------------------------------------------------------------------------------------------------------
+	SET Qry = 'SELECT *  FROM '||SCHEMANAME||'.'||NEFT_IN_TABLENAME||' A WHERE A.TRAN_REF_NO = ?';
+	SET DB_Count.C[] = PASSTHRU(Qry TO Database.{DSNNAME} VALUES(tranRefNo));
+
+	
+	IF NOT EXISTS(DB_Count.C[]) THEN
+		INSERT INTO Database.{DSNNAME}.{SCHEMANAME}.{NEFT_IN_TABLENAME} (
+					TRAN_REF_NO ,
+					TRAN_REF_RETURN_UTR ,
+					BATCH_TIME ,
+					IFSC_SENDER,
+--					SENDER_ACCT_TYPE,
+					SENDER_ACCT_NO,
+					SENDER_ACCT_NAME,
+					REMITTER_DETAIL,
+					IFSC_RECVR,
+--					RECVR_ACCT_TYPE,
+					RECVR_ACCT_NO,
+					RECVR_ACCT_NAME,
+					REMIT_INFO,
+--					REJECT_CODE,
+--					REJECT_REASON,
+					AMOUNT,
+					ORG_TRAN_DATE,
+					TRAN_DATE,
+					ACK_NACK,
+					BANKNAME,
+--					RET_ACKNACK_ERR,
+--					DUP_ACKNACK_OUT,
+					FLAG_FILE_CREATED,
+					CREATION_TIME,
+					LAST_MOD_TIME,
+					ACK_NACK_SEND_MQ,
+--					TRAN_BRANCH,
+--					REF_NO,
+--					SEQINHEADER,
+					MSG_TYPE,
+--					CBS_FILENAME,
+					ORG_TXN_ID,
+					ORG_MSG_ID,
+					CBS_MSG) VALUES (
+					tranRefNo,
+					'',
+					CAST (Environment.Variables.RequestPayload.batch AS INTEGER) ,
+					Environment.Variables.RequestPayload.sender_ifsc,
+--					'';
+					Environment.Variables.RequestPayload.rem_Acc_no ,
+					Environment.Variables.RequestPayload.remiter_Name,
+					Environment.Variables.RequestPayload.cust_address ,
+					Environment.Variables.RequestPayload.reciver_ifsc ,
+--					'' ,
+					Environment.Variables.RequestPayload.ben_Acc_no ,
+					Environment.Variables.RequestPayload.benfi_Name,
+					Environment.Variables.RequestPayload.benef_details ,
+--					Environment.Variables.RequestPayload.sender_reciver_information ,
+--					'' ,
+--					'' ,
+					Environment.Variables.N02.amount ,
+					 CAST(Environment.Variables.RequestPayload.date AS DATE FORMAT 'yyyyMMdd'),
+					 CAST(Environment.Variables.RequestPayload.date AS DATE FORMAT 'yyyyMMdd'),
+					'0',
+					Environment.Variables.RequestPayload.bankName,
+--					'0',
+--					'0',
+					'0',
+					CURRENT_TIMESTAMP,
+					CURRENT_TIMESTAMP,
+					'0',
+--					' ' ,
+	--				'', 
+		--			'' ,
+					'N02' ,
+	--				'',																													
+					Environment.Variables.RequestPayload.txid ,
+					Environment.Variables.RequestPayload.msgid,
+					stringchar);
+					Commit;
+					CALL log4j_1_1('DB_INSERT', 'RMGB_NEFT_IN_STRING', 'INFO','shared count '||CAST(c AS CHARACTER)) INTO rc;
+					SET c =c+1;
+					CALL log4j_1_1('DB_INSERT', 'RMGB_NEFT_IN_STRING', 'INFO','Data inserted to NEFT_IN Table') INTO rc;
+--				ELSEIF EXISTS(DB_Count.C[]) AND DB_Count.C.FLAG_FILE_CREATED = 'F' THEN 
+					
+--				UPDATE Database.NEFT_IN as T SET TRAN_REF_RETURN_UTR = tranRefReturnUtr,BATCH_TIME = CAST (batchTime AS INTEGER) ,IFSC_SENDER = ifscSender,
+--				SENDER_ACCT_TYPE = senderAcctType,SENDER_ACCT_NO = senderAcctNo ,SENDER_ACCT_NAME = senderAcctName,AMOUNT=amount ,
+--				ORG_TRAN_DATE=CAST(orgTranDate AS DATE FORMAT 'yyyyMMdd') ,TRAN_DATE=CAST(tranDate AS DATE FORMAT 'yyyyMMdd'),ACK_NACK='0',BANKNAME = bankName,RET_ACKNACK_ERR='0',
+--				DUP_ACKNACK_OUT ='0',CREATION_TIME = CURRENT_TIMESTAMP , LAST_MOD_TIME = CURRENT_TIMESTAMP,	ACK_NACK_SEND_MQ ='0',TRAN_BRANCH =tranBranch , 
+--				REF_NO = refNum ,SEQINHEADER = seqInHeader,MSG_TYPE = msg_Type,	CBS_FILENAME = cbsfilename,ORG_TXN_ID = txnId,ORG_MSG_ID = msgId,
+--				REMITTER_DETAIL =  remitterDetail ,IFSC_RECVR=ifscRecvr ,RECVR_ACCT_TYPE=recvrAcctType ,RECVR_ACCT_NO=recvrAcctNo,RECVR_ACCT_NAME=recvrAcctName ,
+--				REMIT_INFO=remitInfo,REJECT_CODE=rejectCode,CBS_MSG=payload WHERE T.TRAN_REF_NO = tranRefNo;		
+					
+--						CALL log4j_1_1('DB_INSERT', 'RMGB_NEFT_IN_STRING', 'INFO','Data UPDATED to NEFT_IN Table') INTO rc;
+				ELSE					
+						CALL log4j_1_1('DB_INSERT', 'RMGB_NEFT_IN_STRING', 'INFO','Duplicate Transaction:'||tranRefNo) INTO rc;				
+				END IF; 
+
+		
+		SET OutputRoot = InputRoot;
+	END;
+END MODULE;
+
+
+BROKER SCHEMA com.cedge.rmgb.neft.string
+
+
+CREATE COMPUTE MODULE CBS_RESPONSE
+	DECLARE SCHEMANAME EXTERNAL CHARACTER '' ;
+	DECLARE DSNNAME EXTERNAL CHARACTER ''; 
+	DECLARE NEFT_IN_TABLENAME EXTERNAL CHARACTER '';
+	DECLARE NEFT_IN_PAYLOAD EXTERNAL CHARACTER '' ;
+	
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		 DECLARE flag BOOLEAN ;
+		 CALL CopyMessageHeaders();
+		 SET flag = CopyEntireMessage();
+		RETURN flag;
+	END;
+
+	CREATE PROCEDURE CopyMessageHeaders() BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.*[]);
+		WHILE I < J DO
+			SET OutputRoot.*[I] = InputRoot.*[I];
+			SET I = I + 1;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE CopyEntireMessage()  RETURNS BOOLEAN BEGIN
+		
+--		DECLARE whiteSpace CONSTANT CHARACTER CAST( X'090D0A20' AS CHAR CCSID 1208);
+		DECLARE rc BOOLEAN ;
+		DECLARE utr,responsechar,sequence CHARACTER;
+		DECLARE DB_Details ROW ;
+		DECLARE respblob BLOB ASBITSTREAM (InputBody CCSID InputRoot.Properties.CodedCharSetId ENCODING InputRoot.Properties.Encoding);
+		SET  responsechar = CAST (respblob AS CHARACTER CCSID InputRoot.Properties.CodedCharSetId ENCODING InputRoot.Properties.Encoding);
+		CALL log4j_1_1('Routing_On_response_Code', 'RMGB_NEFT_IN_STRING', 'INFO','CBS_Response : '||responsechar) INTO rc;
+
+--		 IF  CONTAINS (responsechar ,'080000 O.K.') OR CONTAINS(responsechar ,'01ERR 0199')  THEN
+		 IF  CONTAINS (responsechar ,'080000 O.K.')  THEN
+		 		CALL log4j_1_1('Routing_On_response_Code', 'RMGB_NEFT_IN_STRING', 'INFO','Response_CODE : 080000 O.K.') INTO rc;
+		 		SET utr = TRIM(SUBSTRING (responsechar FROM 150 FOR 22));
+		 		CALL log4j_1_1('Routing_On_response_Code', 'RMGB_NEFT_IN_STRING', 'INFO','UTR:'||utr) INTO rc;
+--		 		UPDATE  Database.{DSNNAME}.{SCHEMANAME}.{NEFT_IN_TABLENAME} AS A SET  ACK_NACK = 'P' , LAST_MOD_TIME =CURRENT_TIMESTAMP ,FLAG_FILE_CREATED='S', RESP_CODE ='O.K.' ,CBS_RESP_MSG =responsechar WHERE trim(A.TRAN_REF_NO)= utr;
+				UPDATE  Database.{DSNNAME}.{SCHEMANAME}.{NEFT_IN_TABLENAME} AS A SET  ACK_NACK = 'P' ,FLAG_FILE_CREATED='S',CBS_RESP_MSG =responsechar WHERE A.TRAN_REF_NO = utr;
+				CALL log4j_1_1('Routing_On_response_Code', 'RMGB_NEFT_IN_STRING', 'INFO','ACK_NACK Updated in NEFT_IN Table AS P') INTO rc;
+				SET Environment.Variable.status.utr = utr;
+				--------------------------FOR-N10(CAMT.059)--------------------------------------------------------------------------
+--				IF utr<>Environment.Variables.RequestPayload.utr THEN
+--					CALL log4j_1_1('Routing_On_response_Code', 'RMGB_NEFT_IN_STRING', 'INFO','RESPONSE IS NOT A RELETED UTR') INTO rc;
+--				END IF;
+				------------------------------------SEQUENCE---------------------------------To create sequence query--------------
+				DECLARE count  INTEGER ;
+				DECLARE Qery CHARACTER 'SELECT N10.nextval FROM DUAL';						----CREATE SEQUENCE N10
+				SET DB_Details.A = PASSTHRU(Qery TO Database.{DSNNAME}) ;					----START WITH 1
+				SET count = FLOOR(FIELDVALUE(DB_Details.A.NEXTVAL));						----INCREMENT BY 1
+				SET sequence = CAST(count AS CHARACTER);									----MAXVALUE 999999999
+				IF LENGTH(sequence)<9THEN													----NOCACHE
+					SET sequence = REPLICATE('0',9-LENGTH(sequence))||sequence;				----CYCLE;
+				END IF;																		----COMMIT;
+				------------------------------------SEQUENCE-----------------------------------------------------
+				
+				------------------------------------N10--------------------------------------------------------
+				DECLARE datechar CHARACTER CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyy-MM-dd HH:mm:ss');
+				SET Environment.Variables.N10.CreDt =REPLACE(datechar,' ','T')||'Z' ;
+				SET Environment.Variables.N10.CreDtTm =REPLACE(datechar,' ','T'); 
+				SET Environment.Variables.N10.MsgId = SUBSTRING (Environment.Variables.RequestPayload.reciver_ifsc FROM 1 FOR 4 ) || CAST(CURRENT_DATE AS CHARACTER FORMAT 'yyyyMMdd') ||'5'||sequence; ----utr--- fn:concat( fn:substring($SENDERADDRESS,0 ,5 ), $ORIGINATINGDATE2,'5',fn:substring($UNIQUETRANSACTIONREF ,8 ,9 ))
+				SET Environment.Variables.N10.XpctdValDt = CURRENT_DATE;
+				------------------------------------N10--------------------------------------------------------
+				
+				--------------------------FOR-N10(CAMT.059)---------------------------------------------------------------------------------
+				RETURN TRUE;
+		 ELSE
+		 	
+		 	DECLARE ERROR_DIC ROW ;
+		 	DECLARE error_discription,error_codechar,MUR,cbsutr CHARACTER ;
+		 	DECLARE error_code INTEGER ;
+		 	SET utr = TRIM(Environment.Variables.N02.UTR);
+		 	SET error_codechar = TRIM(SUBSTRING(responsechar FROM 139 for 5));
+		 	SET error_code = CAST (error_codechar AS INTEGER);
+		 	SET ERROR_DIC.A = PASSTHRU('SELECT ERROR_DESCRIPTION FROM NEFT_ERRORS WHERE ERROR_CODE = ? ' TO Database.{DSNNAME} VALUES(error_code)); 
+		 	SET error_discription =  ERROR_DIC.A.ERROR_DESCRIPTION;
+		 	CALL log4j_1_1('Routing_On_response_Code', 'RMGB_NEFT_IN_STRING', 'INFO','Response_Error_CODE :'||error_codechar) INTO rc;
+		 	CALL log4j_1_1('Routing_On_response_Code', 'RMGB_NEFT_IN_STRING', 'INFO','Response_Error_Description :'||error_discription) INTO rc;
+			SET cbsutr = COALESCE (TRIM(SUBSTRING (responsechar FROM 152 FOR 22)), utr);
+--		 	UPDATE Database.{DSNNAME}.{SCHEMANAME}.{NEFT_IN_TABLENAME} AS A SET  ACK_NACK = 'F',TRAN_REF_NO =utr , LAST_MOD_TIME =CURRENT_TIMESTAMP , REJECT_CODE = error_code ,REJECT_REASON=error_discription,CBS_RESP_MSG =responsechar WHERE A.TRAN_REF_NO = cbsutr;
+		 	UPDATE Database.{DSNNAME}.{SCHEMANAME}.{NEFT_IN_TABLENAME} AS A SET  ACK_NACK = 'F', LAST_MOD_TIME =CURRENT_TIMESTAMP , REJECT_CODE = error_code ,REJECT_REASON=error_discription,CBS_RESP_MSG =responsechar WHERE A.TRAN_REF_NO = cbsutr;
+			CALL log4j_1_1('Routing_On_response_Code', 'RMGB_NEFT_IN_STRING', 'INFO','ACK_NACK Updated in NEFT_IN Table AS F') INTO rc;
+			CALL log4j_1_1('Routing_On_response_Code', 'RMGB_NEFT_IN_STRING', 'INFO','CBS UTR:'||cbsutr) INTO rc;
+			--------------------------------------------------------------------------------------------------
+--			SET ERROR_ROW.A[] = PASSTHRU('SELECT * FROM NEFT_ERRORS ' TO Database.{DSNNAME}); 
+--          SET Environment.Variables.ERROR_DIS[] = SELECT E.ERROR_DESCRIPTION FROM ERROR_ROW.A[] AS E  WHERE E.ERROR_CODE= 51;
+		 	-------------------------------------------------------------------------------------------------------
+		 	CALL GenerateUTR(Environment.Variables.N02.msgid,Environment.Variables.N02.CreDtTm,MUR);
+			SET Environment.Variables.N02.MUR = MUR ;
+			PROPAGATE TO TERMINAL 1  DELETE NONE;
+			RETURN FALSE;
+		 END IF;
+		
+	END;
+END MODULE;
+
+
+		CREATE PROCEDURE GenerateUTR(IN msgId CHARACTER, IN cDateTime CHARACTER,INOUT MUR CHARACTER  )
+		BEGIN
+			DECLARE jDate , getYear , doy , utr CHARACTER '';
+			SET getYear = SUBSTRING(cDateTime FROM 3 FOR 2);
+			DECLARE ctime CHARACTER SUBSTRING (cDateTime AFTER 'T' for 5);
+			SET doy = REPLACE(SUBSTRING(cDateTime FROM 3 FOR 8),'-','');
+			DECLARE target DATE;
+			SET target = CAST(doy AS DATE FORMAT 'yyMMdd');
+			SET doy = EXTRACT(DAYOFYEAR FROM target);
+			DECLARE len INTEGER (3 - (LENGTH(doy)));
+			
+			IF len<3 THEN
+				SET jDate = REPLICATE('0' , len);
+				SET jDate = getYear||jDate||doy;
+			ELSE
+				SET jDate = getYear||doy;
+			END IF;
+			
+			SET MUR = OVERLAY(msgId PLACING jDate FROM 5 for 11);
+		END;
+
+		
+		BROKER SCHEMA com.cedge.rmgb.neft.string
+
+
+CREATE COMPUTE MODULE RMGB_NEFT_INWARD_STRING_Compute
+	DECLARE DSNNAME EXTERNAL CHARACTER '';
+	DECLARE SCHEMANAME EXTERNAL CHARACTER '';
+	DECLARE BANKCOUNT_TABLENAME EXTERNAL CHARACTER '' ;
+	DECLARE iib_destiniton_path EXTERNAL CHARACTER '';
+	DECLARE NEFT_IN_TABLENAME EXTERNAL CHARACTER '';
+	DECLARE NEFT_IN_PAYLOAD_TABLENAME EXTERNAL CHARACTER '';
+	DECLARE N10_OUT_TABLE EXTERNAL CHARACTER '';
+	DECLARE pfxpath EXTERNAL CHARACTER;
+	DECLARE pfxpass EXTERNAL CHARACTER ;
+	DECLARE AppID EXTERNAL CHARACTER ;
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE rc BOOLEAN;
+		DECLARE flag BOOLEAN ;
+		 CALL CopyMessageHeaders();
+		SET flag = CopyEntireMessage();
+		UPDATE Database.{DSNNAME}.{SCHEMANAME}.{NEFT_IN_PAYLOAD_TABLENAME} AS P SET STATUS='S' WHERE P.UTR= Environment.Variable.status.utr ;
+		CALL log4j_1_1('Routing_On_response_Code', 'RMGB_NEFT_IN_STRING', 'INFO','STATUS Updated in to neft_in_payload table') INTO rc;
+		RETURN flag;
+	END;
+
+	CREATE PROCEDURE CopyMessageHeaders() BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.*[]);
+		WHILE I < J DO
+			SET OutputRoot.*[I] = InputRoot.*[I];
+			SET I = I + 1;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE CopyEntireMessage() RETURNS BOOLEAN BEGIN
+		DECLARE msgblob BLOB;
+		DECLARE msgchar,fileName,fileLoc CHARACTER;
+		DECLARE rc BOOLEAN;
+		IF FIELDNAME(InputBody) = 'XMLNSC' THEN
+			
+			--------------------------------------------sign---------------------------------------------------------------------
+			SET OutputRoot.Properties = InputRoot.Properties;
+			DECLARE CRLF ,CR,LF ,fourBlock CHARACTER ;
+			DECLARE i INTEGER;
+			DECLARE verify ROW;
+			DECLARE  ref REFERENCE TO InputRoot.XMLNSC.RequestPayload.Document[1];							
+			MOVE ref FIRSTCHILD TYPE XMLNSC.Element;
+			DECLARE  refMsgType REFERENCE TO InputRoot.XMLNSC.RequestPayload.AppHdr.MsgDefIdr[1];						
+			MOVE refMsgType FIRSTCHILD TYPE XMLNSC.Element;
+			DECLARE wholeMsgBlob BLOB;
+			SET wholeMsgBlob = ASBITSTREAM( ref OPTIONS FolderBitStream CCSID 1208);
+			DECLARE wholeMsgChar CHARACTER CAST(wholeMsgBlob AS CHARACTER ENCODING 546);
+	        
+	        IF refMsgType = 'pacs.008.001.09' THEN
+	        	SET fourBlock ='<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.09">'||wholeMsgChar||'</Document>';      
+	        ELSEIF refMsgType = 'pacs.004.001.10' THEN
+	        	SET fourBlock ='<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.004.001.10">'||wholeMsgChar||'</Document>';
+	        ELSEIF refMsgType = 'camt.059.001.06' THEN	
+	       		SET fourBlock ='<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.059.001.06">'||wholeMsgChar||'</Document>';		
+	        END IF;
+		    
+			DECLARE signature CHARACTER;
+			CALL getProp( pfxpath,pfxpass,fourBlock,signature);
+			SET signature = signature ;
+			DECLARE sigmsg CHARACTER;
+			SET sigmsg = signature;
+			SET Environment.SIG = sigmsg ;
+			SET sigmsg = REPLACE(signature, '"','');
+			DECLARE addpayload REFERENCE TO InputRoot.XMLNSC;
+		    SET addpayload.RequestPayload.AppHdr.Sgntr.XMLSgntrs = NULL;
+--		    SET addpayload.RequestPayload.*:AppHdr.Sgntr.(XMLNSC.NamespaceDecl)sig:XMLSgntrs=NULL;
+--		    SET addpayload.RequestPayload.AppHdr.Sgntr.XMLSgntrs.(XMLNSC.NamespaceDecl)Sgntrs1	='http://www.w3.org/2000/09/xmldsig#';
+	        SET addpayload.RequestPayload.AppHdr.Sgntr."sig:XMLSgntrs"								='-----BEGIN PKCS7-----'||sigmsg||'-----END PKCS7-----';
+	       
+			CALL log4j_1_1('Signed', 'RMGB_NEFT_IN_STRING', 'WARN','Message is successully signing') INTO rc;
+			DECLARE appId CHARACTER AppID;
+			DECLARE wholeMsgBlob1 BLOB ASBITSTREAM(addpayload, 546, 1208 );		
+	    	DECLARE wholeMsgChar1 CHAR CAST(wholeMsgBlob1 AS CHAR CCSID 1208);
+	    	SET wholeMsgChar1 = appId||wholeMsgChar1;	
+			SET wholeMsgChar1 = REPLACE(wholeMsgChar1,'^M','');		
+			SET wholeMsgChar1 = REPLACE(wholeMsgChar1,'AppHdr1','xmlns');
+			SET wholeMsgChar1 = REPLACE(wholeMsgChar1,'AppHdr2','xmlns:xsi');
+			SET wholeMsgChar1 = REPLACE(wholeMsgChar1,'AppHdr3','xmlns:sig');
+			SET wholeMsgChar1 = REPLACE(wholeMsgChar1,'Document1','xmlns');
+--			CALL log4j_1_1('Signed', 'RMGB_NEFT_IN_STRING', 'WARN','Message :- ' || wholeMsgChar1 ) INTO rc;
+--	    	DECLARE wholeMsgBlob2 BLOB CAST(wholeMsgChar1 AS BLOB CCSID 1208);
+--	    	SET OutputRoot.BLOB.BLOB = wholeMsgBlob2;
+	   
+			---------------------------------------------sign--------------------------------------------------------------------
+			DECLARE utr,batch CHARACTER ;
+			SET batch = CAST(Environment.Variables.RequestPayload.batch AS INTEGER);
+			SET utr = SUBSTRING(InputRoot.XMLNSC.RequestPayload.*:Document.*:NtfctnToRcvStsRpt.*:OrgnlNtfctnAndSts.*:OrgnlNtfctnRef.*:OrgnlItmAndSts.*:OrgnlEndToEndId AFTER '/XUTR/');
+--			SET utr1 =utr;
+--			SET msgblob = ASBITSTREAM(InputBody CCSID InputRoot.Properties.CodedCharSetId);
+--			SET msgchar = CAST(msgblob AS CHARACTER CCSID InputRoot.Properties.CodedCharSetId);
+			INSERT INTO Database.{DSNNAME}.{SCHEMANAME}.{N10_OUT_TABLE} (UTR,N10_MSG,BATCH,FLAG,TRANDATE) VALUES (utr,wholeMsgChar1,batch,'0',CURRENT_TIMESTAMP);
+			CALL log4j_1_1('Signed', 'RMGB_NEFT_IN_STRING', 'WARN','N10 Message inserted in to N10_OUT table') INTO rc;
+--			SET OutputLocalEnvironment.Destination.File.Name = 'campt.059.txt';
+--			SET OutputLocalEnvironment.Destination.File.Directory ='/var/iib/interface/Rathod/STRING/CAMT059';
+		RETURN FALSE;
+		ELSEIF FIELDNAME(InputBody) = 'DFDL' THEN
+			DECLARE sysdate,bankName,batchTime,flag,utr CHARACTER ;
+			DECLARE count,count1 INTEGER;
+			DECLARE DB_Call ROW ;
+			SET bankName =Environment.Variables.RequestPayload.bankName;
+			SET sysdate = CAST (CURRENT_DATE AS CHARACTER FORMAT 'yyyyMMdd');
+			SET batchTime =Environment.Variables.RequestPayload.batch;
+			SET msgblob = ASBITSTREAM(InputBody CCSID InputRoot.Properties.CodedCharSetId);
+			SET msgchar = CAST(msgblob AS CHARACTER CCSID InputRoot.Properties.CodedCharSetId);
+			---------------------------------------------NEFTCOUNT-------------------------------------------
+			DECLARE Qry CHARACTER 'SELECT NEFTCOUNT FROM '||SCHEMANAME||'.'||BANKCOUNT_TABLENAME ||' A WHERE A.BANKNAME = ?';
+			SET DB_Call.A[] = PASSTHRU(Qry TO Database.{DSNNAME} VALUES(bankName));
+			SET count = DB_Call.A.NEFTCOUNT;
+			SET count1 = count + 1 ;
+			IF count1 > 99999 THEN 
+				SET count1 = '0';
+			END IF;
+			SET flag = CAST(count AS CHARACTER);
+			DECLARE len INTEGER ;
+			SET len = LENGTH(flag);
+			IF len < 5 THEN
+				SET len = (5 -len);
+				SET flag = REPLICATE('0',len)||flag ;
+			END IF;
+			UPDATE Database.{DSNNAME}.{SCHEMANAME}.{BANKCOUNT_TABLENAME} as A SET NEFTCOUNT = count1 WHERE A.BANKNAME = bankName ;
+			---------------------------------------------NEFTCOUNT-------------------------------------------
+--			SET utr1 =Environment.Variables.RequestPayload.utr;
+			SET fileName = 'NEFT_'||sysdate||'_'||flag||'_'||bankName||'_'||batchTime||'.TXT';
+			SET fileLoc = iib_destiniton_path||bankName||'/N02';
+			SET utr = InputRoot.DFDL.N02.body.record.Transaction_RefNumber;
+			SET OutputLocalEnvironment.Destination.File.Name = fileName;
+			SET OutputLocalEnvironment.Destination.File.Directory =fileLoc;
+			CALL log4j_1_1('N10 or N02 Response', 'RMGB_NEFT_IN_STRING', 'INFO','FileName :'||fileName) INTO rc;
+			CALL log4j_1_1('N10 or N02 Response', 'RMGB_NEFT_IN_STRING', 'INFO','FileDirectory :'||fileLoc ) INTO rc;
+--			UPDATE Database.{DSNNAME}.{SCHEMANAME}.{BANKCOUNT_TABLENAME} as A SET NEFTCOUNT = count1 WHERE A.BANKNAME = bankName ;
+			UPDATE Database.{DSNNAME}.{SCHEMANAME}.{NEFT_IN_TABLENAME} AS B SET CBS_MSG = msgchar ,CBS_FILENAME =fileName, FLAG_FILE_CREATED='Y' WHERE B.TRAN_REF_NO= utr ;
+			SET OutputRoot = InputRoot;
+			RETURN TRUE;
+		ELSE 
+				CALL log4j_1_1('Routing_On_response_Code', 'RMGB_NEFT_IN_STRING', 'INFO','Msg Not Related To XML Or DFDL Format') INTO rc;
+				RETURN FALSE;
+		END IF;
+--		CALL log4j_1_1('Routing_On_response_Code', 'RMGB_NEFT_IN_STRING', 'INFO','Response_CODE : 080000 O.K.') INTO rc;
+	
+--		DECLARE responsechar CHARACTER CAST (InputBody AS CHARACTER CCSID InputRoot.Properties.CodedCharSetId ENCODING InputRoot.Properties.Encoding);
+--		 SET responsechar = responsechar;
+--		SET OutputLocalEnvironment.Destination.File.Name=Environment.Variables.RequestPayload.utr||'_camt059.TXT';
+--		SET OutputLocalEnvironment.Destination.File.Directory = '/var/iib/interface/Rathod/STRING/N02';
+
+	END;
+	
+	CREATE PROCEDURE  getProp( IN P1 CHARACTER, IN P2 CHARACTER,IN P3 CHARACTER, INOUT P4 CHARACTER)
+ 	LANGUAGE JAVA 
+ 	EXTERNAL NAME "com.cedge.signer.Signatureflow_JavaCompute.getProperties";
+END MODULE;
+
