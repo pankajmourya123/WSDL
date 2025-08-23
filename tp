@@ -1,35 +1,66 @@
+import com.ibm.broker.javacompute.MbJavaComputeNode;
+import com.ibm.broker.plugin.*;
 
-Node: IIBPRODBRKR
-Server: PANKAJ
-Application: APP1
-Message flows:Flow1
+public class Flow1_JavaCompute extends MbJavaComputeNode {
 
-User-defined properties
-User-defined property
-Local UDP: FLAG	N	
+    public void evaluate(MbMessageAssembly inAssembly) throws MbException {
+        MbOutputTerminal out = getOutputTerminal("out");
 
+        MbMessage inMessage = inAssembly.getMessage();
+        MbMessageAssembly outAssembly = null;
 
+        try {
+            MbMessage outMessage = new MbMessage(inMessage);
+            outAssembly = new MbMessageAssembly(inAssembly, outMessage);
 
-1. Login to the server: 10.32.46.11:4414
+            // Example: Extract msgType from input message (you must define where it comes from)
+            String msgType = "pacs.004.001.03"; // Replace with actual logic to extract msgType
 
-2. Click on "APGVSERVER".
+            if ("pacs.004.001.03".equals(msgType)) {
+                MbElement root = outMessage.getRootElement();
+                MbElement bizMsgIdrEle = root.getLastChild().getFirstElementByPath("/XMLNSC/RequestPayload/Document/PmtRtr/GrpHdr/MsgId");
+                MbElement orgnlMsgIdEle = root.getLastChild().getFirstElementByPath("/XMLNSC/RequestPayload/Document/PmtRtr/OrgnlGrpInf/OrgnlMsgId");
+                MbElement orgnlCreDtTmEle = root.getLastChild().getFirstElementByPath("/XMLNSC/RequestPayload/Document/PmtRtr/OrgnlGrpInf/OrgnlCreDtTm");
 
-3. Navigate to the "APGVB_NEFT_INWARD" application.
+                if (bizMsgIdrEle != null && orgnlMsgIdEle != null && orgnlCreDtTmEle != null) {
+                    String bizMsgIdr = bizMsgIdrEle.getValueAsString();
+                    String orgnlMsgId = orgnlMsgIdEle.getValueAsString();
+                    String orgnlCreDtTm = orgnlCreDtTmEle.getValueAsString();
 
-4. Click on "APGVB_INWARD_GATEWAY".
+                    if (orgnlCreDtTm.endsWith("Z")) {
+                        orgnlCreDtTm = orgnlCreDtTm.substring(0, orgnlCreDtTm.length() - 1);
+                    }
 
-5. Go to the "Layout & Properties" section.
+                    // Create new XMLNSC structure
+                    MbElement outRoot = outMessage.getRootElement().createElementAsLastChild(MbXMLNSC.PARSER_NAME);
+                    MbElement payload = outRoot.createElementAsLastChild(MbElement.TYPE_NAME, "RequestPayload", null);
+                    MbElement document = payload.createElementAsLastChild(MbElement.TYPE_NAME, "Document", null);
+                    MbElement pmtRtr = document.createElementAsLastChild(MbElement.TYPE_NAME, "PmtRtr", null);
+                    MbElement orgnlGrpInf = pmtRtr.createElementAsLastChild(MbElement.TYPE_NAME, "OrgnlGrpInf", null);
 
-6. Locate the property: localUDP:file_flag
+                    orgnlGrpInf.createElementAsLastChild(MbElement.TYPE_NAME, "BizMsgIdr", bizMsgIdr);
+                    orgnlGrpInf.createElementAsLastChild(MbElement.TYPE_NAME, "OrgnlMsgId", orgnlMsgId);
+                    orgnlGrpInf.createElementAsLastChild(MbElement.TYPE_NAME, "OrgnlCreDtTm", orgnlCreDtTm);
+                }
+            }
 
-   Current values:
-   - Persisted Value: Y
-   - Override: Y
-   - Active Value: Y
+        } catch (MbException | RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new MbUserException(this, "evaluate()", "", "", e.toString(), null);
+        }
 
-7. Change the override value of the user-defined property "localUDP:file_flag" from Y to N.
+        out.propagate(outAssembly);
+    }
 
-8. After the change, the values should be:
-   - Persisted Value: Y
-   - Override: N
-   - Active Value: N
+    @Override
+    public void onPreSetupValidation() throws MbException {}
+    @Override
+    public void onSetup() throws MbException {}
+    @Override
+    public void onStart() throws MbException {}
+    @Override
+    public void onStop(boolean wait) throws MbException {}
+    @Override
+    public void onTearDown() throws MbException {}
+}
